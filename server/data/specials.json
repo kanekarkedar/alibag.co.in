@@ -1,0 +1,54 @@
+[
+    {
+        "id": "deal_001",
+        "title": "Monsoon Magic 🌧️",
+        "type": "seasonal",
+        "description": "Experience the lush green ghats of Alibag. Flat 25% off on all Jungle Stays.",
+        "code": "MONSOON25",
+        "discount": "25% OFF",
+        "valid_until": "2025-08-30",
+        "image": "https://images.unsplash.com/photo-1544252899-281b67fc4bf2?w=600",
+        "category_filter": "Jungle",
+        "color": "#E8F5E9",
+        "text_color": "#1B5E20"
+    },
+    {
+        "id": "deal_002",
+        "title": "Romantic Getaway 💖",
+        "type": "package",
+        "description": "Candlelight dinner + Spa included with any Beach Resort booking of 2+ nights.",
+        "code": "HEART20",
+        "discount": "FREE DINNER",
+        "valid_until": "2025-12-31",
+        "image": "https://images.unsplash.com/photo-1515238152791-8216bfdf10a6?w=600",
+        "category_filter": "Beach",
+        "color": "#FCE4EC",
+        "text_color": "#880E4F"
+    },
+    {
+        "id": "deal_003",
+        "title": "Work from Paradise",
+        "type": "long_stay",
+        "description": "High-speed WiFi guaranteed. 40% off on monthly rentals.",
+        "code": "WORKATION40",
+        "discount": "40% OFF",
+        "valid_until": "2025-06-30",
+        "image": "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=600",
+        "category_filter": "Villa",
+        "color": "#E3F2FD",
+        "text_color": "#0D47A1"
+    },
+    {
+        "id": "deal_004",
+        "title": "Group Villa Bash",
+        "type": "group",
+        "description": "Book a 5BHK Villa and get a private BBQ setup for free.",
+        "code": "PARTY5",
+        "discount": "FREE BBQ",
+        "valid_until": "2025-11-20",
+        "image": "https://images.unsplash.com/photo-1533750516457-a7f992034fec?w=600",
+        "category_filter": "Villa",
+        "color": "#FFF3E0",
+        "text_color": "#E65100"
+    }
+]

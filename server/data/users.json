@@ -1,0 +1,16 @@
+[
+    {
+        "id": "admin_001",
+        "name": "Master Admin",
+        "email": "kedukatli@gmail.com",
+        "role": "admin",
+        "password_hash": "kEDU@123"
+    },
+    {
+        "id": "own_001",
+        "name": "Rahul Owner",
+        "email": "rahul@hotel.com",
+        "role": "owner",
+        "password_hash": "owner123"
+    }
+]

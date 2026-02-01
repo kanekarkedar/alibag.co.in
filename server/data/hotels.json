@@ -1,0 +1,537 @@
+[
+  {
+    "id": 1766083144035,
+    "owner_id": "imported_R001",
+    "name": "The Blue Sky",
+    "location": "Alibag",
+    "category": "Villa",
+    "price": 5000,
+    "description": "Located Within 1 km. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 5000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144036,
+    "owner_id": "imported_R002",
+    "name": "Coconut Ivy Resort & Spa",
+    "location": "Chendre, Alibag",
+    "category": "Villa",
+    "price": 6000,
+    "description": "Located Within 500 m. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 6000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144037,
+    "owner_id": "imported_R003",
+    "name": "Lotus The Lakeview Resort",
+    "location": "Vidyanagar Lake, Varsoli",
+    "category": "Villa",
+    "price": 7000,
+    "description": "Located Within 1 km. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 7000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144038,
+    "owner_id": "imported_R004",
+    "name": "CanvaSand By Eease Hospitality",
+    "location": "Kotharbat, Alibag",
+    "category": "Villa",
+    "price": 8000,
+    "description": "Located Within 2 km. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 8000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144039,
+    "owner_id": "imported_R005",
+    "name": "Sea Shell Resort",
+    "location": "Akshi",
+    "category": "Villa",
+    "price": 9000,
+    "description": "Located Within 5 km. A wonderful stay.",
+    "amenities": [
+      "Wifi"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 9000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144040,
+    "owner_id": "imported_R006",
+    "name": "Maple IVY",
+    "location": "Near Akshi Beach",
+    "category": "Villa",
+    "price": 7500,
+    "description": "Located Within 1 km. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 7500,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144041,
+    "owner_id": "imported_R007",
+    "name": "Silvanus Forest Retreat",
+    "location": "Bhat Galli, Near Mukri Ganesh Temple Alibaug - Revdanda Rd, Alibaug",
+    "category": "Villa",
+    "price": 8500,
+    "description": "Located Within 2 km. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 8500,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144042,
+    "owner_id": "imported_R008",
+    "name": "Casa De Kihim",
+    "location": "Kihim Beach, Chondi - Kihim Road, Alibaug",
+    "category": "Villa",
+    "price": 6500,
+    "description": "Located Within 3 km. A wonderful stay.",
+    "amenities": [
+      "Wifi"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 6500,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144043,
+    "owner_id": "imported_R009",
+    "name": "Sanman Beach Resort",
+    "location": "Varsoli Beach",
+    "category": "Villa",
+    "price": 5000,
+    "description": "Located Beach-Touch. A wonderful stay.",
+    "amenities": [
+      "Wifi"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 5000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144044,
+    "owner_id": "imported_R010",
+    "name": "Tranquil Coast Resorts",
+    "location": "Varsoli",
+    "category": "Villa",
+    "price": 9000,
+    "description": "Located Within 1 km. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 9000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144045,
+    "owner_id": "imported_R011",
+    "name": "Jogalekar Cottage",
+    "location": "Near Kihim Beach",
+    "category": "Villa",
+    "price": 5500,
+    "description": "Located Within 2 km. A wonderful stay.",
+    "amenities": [
+      "Wifi"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 5500,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144046,
+    "owner_id": "imported_R012",
+    "name": "Sanidhya Resort",
+    "location": "Varsoli",
+    "category": "Villa",
+    "price": 7000,
+    "description": "Located Within 2 km. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 7000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144047,
+    "owner_id": "imported_R013",
+    "name": "Wind N Waves Resort",
+    "location": "Varsoli",
+    "category": "Villa",
+    "price": 8000,
+    "description": "Located Within 2 km. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 8000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144048,
+    "owner_id": "imported_R014",
+    "name": "Vaarsa",
+    "location": "Varsoli",
+    "category": "Villa",
+    "price": 9000,
+    "description": "Located Within 1 km. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 9000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144049,
+    "owner_id": "imported_R015",
+    "name": "Jimmy Beach Resort",
+    "location": "Naik Wadi, Varsoli",
+    "category": "Villa",
+    "price": 11000,
+    "description": "Located Beach-Touch. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 11000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144050,
+    "owner_id": "imported_R016",
+    "name": "Ghanvatkar Bunglow at Zirad",
+    "location": "Zirad",
+    "category": "Villa",
+    "price": 6000,
+    "description": "Located Within 5 km. A wonderful stay.",
+    "amenities": [
+      "Wifi"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 6000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144051,
+    "owner_id": "imported_R017",
+    "name": "Bohemian Blue Stay",
+    "location": "Near Akshi Beach",
+    "category": "Villa",
+    "price": 7500,
+    "description": "Located Within 1 km. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 7500,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144052,
+    "owner_id": "imported_R018",
+    "name": "Hotel West Coast Alibaug",
+    "location": "Nagaon",
+    "category": "Villa",
+    "price": 10000,
+    "description": "Located Within 2 km. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 10000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144053,
+    "owner_id": "imported_R019",
+    "name": "Hotel Ravikiran",
+    "location": "Varsoli",
+    "category": "Villa",
+    "price": 9000,
+    "description": "Located Within 1 km. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 9000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  },
+  {
+    "id": 1766083144054,
+    "owner_id": "imported_R020",
+    "name": "Tropicana Resort & Spa Alibaug",
+    "location": "Mapgaon Road",
+    "category": "Villa",
+    "price": 11000,
+    "description": "Located Within 2 km. A wonderful stay.",
+    "amenities": [
+      "Wifi",
+      "Pool"
+    ],
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"
+    ],
+    "roomTypes": [
+      {
+        "name": "Standard Room",
+        "price": 11000,
+        "available": true,
+        "description": "Cozy room with basic amenities"
+      }
+    ],
+    "reviews": [],
+    "rating": 4.5
+  }
+]

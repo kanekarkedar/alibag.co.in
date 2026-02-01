@@ -1,0 +1,262 @@
+[
+  {
+    "id": 1766082944561,
+    "name": "The Blue Sky",
+    "location": "Alibag",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944562,
+    "name": "Coconut Ivy Resort & Spa",
+    "location": "Chendre, Alibag",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944563,
+    "name": "Lotus The Lakeview Resort",
+    "location": "Vidyanagar Lake, Varsoli",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944564,
+    "name": "CanvaSand By Eease Hospitality",
+    "location": "Kotharbat, Alibag",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944565,
+    "name": "Sea Shell Resort",
+    "location": "Akshi",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944566,
+    "name": "Maple IVY",
+    "location": "Near Akshi Beach",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944567,
+    "name": "Silvanus Forest Retreat",
+    "location": "Bhat Galli, Near Mukri Ganesh Temple Alibaug - Revdanda Rd, Alibaug",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944568,
+    "name": "Casa De Kihim",
+    "location": "Kihim Beach, Chondi - Kihim Road, Alibaug",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944569,
+    "name": "Sanman Beach Resort",
+    "location": "Varsoli Beach",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944570,
+    "name": "Tranquil Coast Resorts",
+    "location": "Varsoli",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944571,
+    "name": "Jogalekar Cottage",
+    "location": "Near Kihim Beach",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944573,
+    "name": "Sanidhya Resort",
+    "location": "Varsoli",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944574,
+    "name": "Wind N Waves Resort",
+    "location": "Varsoli",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944575,
+    "name": "Vaarsa",
+    "location": "Varsoli",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944576,
+    "name": "Jimmy Beach Resort",
+    "location": "Naik Wadi, Varsoli",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944577,
+    "name": "Ghanvatkar Bunglow at Zirad",
+    "location": "Zirad",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944578,
+    "name": "Bohemian Blue Stay",
+    "location": "Near Akshi Beach",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944579,
+    "name": "Hotel West Coast Alibaug",
+    "location": "Nagaon",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944580,
+    "name": "Hotel Ravikiran",
+    "location": "Varsoli",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  },
+  {
+    "id": 1766082944581,
+    "name": "Tropicana Resort & Spa Alibaug",
+    "location": "Mapgaon Road",
+    "category": "Villa",
+    "price": 5000,
+    "description": "A lovely stay.",
+    "is_active": true,
+    "images": [
+      "https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600"
+    ],
+    "roomTypes": []
+  }
+]
