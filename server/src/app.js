@@ -181,6 +181,38 @@ app.post('/api/hotels/:id/reviews', async (req, res) => {
     res.json({ success: true, data: newReview, newRating: hotel.rating });
 });
 
+// Admin Add Hotel API
+app.post('/api/hotels', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'admin') return res.sendStatus(403);
+
+    const { name, location, price, category, description, image } = req.body;
+
+    if (!name || !price || !location) {
+        return res.status(400).json({ success: false, message: 'Missing required fields (name, price, location)' });
+    }
+
+    const newHotel = {
+        id: Date.now(),
+        owner_id: `admin_${req.user.id}`,
+        name,
+        location,
+        category: category || 'Villa',
+        price: parseInt(price),
+        description: description || 'New lovely stay.',
+        amenities: ['Wifi', 'Parking'],
+        is_active: true,
+        images: [image || 'https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?w=600'],
+        roomTypes: [],
+        reviews: [],
+        rating: 5.0
+    };
+
+    DB.hotels.push(newHotel);
+    await saveData('hotels.json', DB.hotels);
+
+    res.json({ success: true, data: newHotel });
+});
+
 // Availability Update (Owner)
 app.post('/api/owner/update-availability', async (req, res) => {
     const { key, hotelId, updates } = req.body;

@@ -137,6 +137,27 @@ class App {
                         Upload CSV
                     </button>
                 </div>
+
+                <div style="background: white; padding: 24px; border-radius: 16px; border: 1px dashed var(--primary);">
+                    <h3 style="margin-bottom: 16px;">Add Single Hotel 🏨</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <input type="text" id="add-name" placeholder="Hotel Name" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                        <input type="number" id="add-price" placeholder="Price (₹)" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                        <input type="text" id="add-location" placeholder="Location" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                        <select id="add-category" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                            <option value="Villa">Villa</option>
+                            <option value="Resort">Resort</option>
+                            <option value="Camping">Camping</option>
+                        </select>
+                    </div>
+                    <input type="text" id="add-image" placeholder="Image URL (Unsplash/etc)" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 16px;">
+                    <textarea id="add-desc" placeholder="Description..." style="width: 100%; height: 80px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 16px;"></textarea>
+                    
+                    <button class="btn btn-primary" id="add-hotel-btn">
+                        <span class="material-symbols-rounded">add_business</span>
+                        Add Hotel
+                    </button>
+                </div>
             </div>
         `;
 
@@ -151,44 +172,66 @@ class App {
                 const res = await fetch(`${API_URL}/admin/import`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${this.state.token}` },
-                    body: formData
-                });
-                const data = await res.json();
-                if (data.success) {
-                    alert(`Success! Imported ${data.count} hotels.`);
-                } else {
-                    alert('Upload Failed: ' + (data.error || 'Unknown error'));
-                }
-            } catch (e) { alert('Upload Error'); }
-        };
-    }
+                } catch (e) { alert('Upload Error'); }
+            };
 
-    toggleMenu(show) {
-        this.state.isMenuOpen = show;
-        this.sideMenu.style.left = show ? '0' : '-280px';
-        this.overlay.style.display = show ? 'block' : 'none';
-        setTimeout(() => this.overlay.style.opacity = show ? '1' : '0', 10); // Fade effect
-    }
+            this.mainContent.querySelector('#add-hotel-btn').onclick = async () => {
+                const name = document.getElementById('add-name').value;
+                const price = document.getElementById('add-price').value;
+                const location = document.getElementById('add-location').value;
+                const category = document.getElementById('add-category').value;
+                const image = document.getElementById('add-image').value;
+                const description = document.getElementById('add-desc').value;
 
-    checkFirstTimeVisitor() {
-        const hasVisited = localStorage.getItem('alibag_visited');
-        if (!hasVisited) {
-            setTimeout(() => {
-                this.showDealsPopup();
-                localStorage.setItem('alibag_visited', 'true');
-            }, 1000);
+                if (!name || !price || !location) return alert('Name, Price, and Location are required!');
+
+                try {
+                    const res = await fetch(`${API_URL}/hotels`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.state.token}`
+                        },
+                        body: JSON.stringify({ name, price, location, category, image, description })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        alert('Hotel Added Successfully! 🏨');
+                        // Clear form
+                        document.getElementById('add-name').value = '';
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                } catch (e) { alert('Connection Error: ' + e.message); }
+            };
         }
-    }
 
-    showDealsPopup() {
-        const dialog = document.createElement('div');
-        dialog.style.cssText = `
+        toggleMenu(show) {
+            this.state.isMenuOpen = show;
+            this.sideMenu.style.left = show ? '0' : '-280px';
+            this.overlay.style.display = show ? 'block' : 'none';
+            setTimeout(() => this.overlay.style.opacity = show ? '1' : '0', 10); // Fade effect
+        }
+
+        checkFirstTimeVisitor() {
+            const hasVisited = localStorage.getItem('alibag_visited');
+            if (!hasVisited) {
+                setTimeout(() => {
+                    this.showDealsPopup();
+                    localStorage.setItem('alibag_visited', 'true');
+                }, 1000);
+            }
+        }
+
+        showDealsPopup() {
+            const dialog = document.createElement('div');
+            dialog.style.cssText = `
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 2000;
             display: flex; align-items: center; justify-content: center;
             opacity: 0; transition: opacity 0.5s;
         `;
-        dialog.innerHTML = `
+            dialog.innerHTML = `
             <div style="background: white; width: 85%; max-width: 400px; border-radius: 24px; padding: 32px; text-align: center; transform: scale(0.9); transition: transform 0.3s;">
                 <span class="material-symbols-rounded" style="font-size: 48px; color: #FFD700; margin-bottom: 16px;">celebration</span>
                 <h2 style="font-size: 24px; margin-bottom: 8px;">Welcome Friend! 🌴</h2>
@@ -197,34 +240,34 @@ class App {
                 <button id="close-btn" style="background: none; border: none; color: var(--text-light); font-size: 14px; text-decoration: underline;">No, just browsing</button>
             </div>
         `;
-        document.body.appendChild(dialog);
+            document.body.appendChild(dialog);
 
-        // Animate in
-        requestAnimationFrame(() => {
-            dialog.style.opacity = '1';
-            dialog.querySelector('div').style.transform = 'scale(1)';
-        });
+            // Animate in
+            requestAnimationFrame(() => {
+                dialog.style.opacity = '1';
+                dialog.querySelector('div').style.transform = 'scale(1)';
+            });
 
-        dialog.querySelector('#deals-btn').onclick = () => {
-            document.body.removeChild(dialog);
-            this.renderDeals();
-        };
+            dialog.querySelector('#deals-btn').onclick = () => {
+                document.body.removeChild(dialog);
+                this.renderDeals();
+            };
 
-        dialog.querySelector('#close-btn').onclick = () => {
-            document.body.removeChild(dialog);
-        };
-    }
+            dialog.querySelector('#close-btn').onclick = () => {
+                document.body.removeChild(dialog);
+            };
+        }
 
     async renderDeals() {
-        this.state.currentView = 'deals';
-        this.mainContent.innerHTML = '<div style="padding: 40px; text-align: center;">Loading amazing deals... ✨</div>';
+            this.state.currentView = 'deals';
+            this.mainContent.innerHTML = '<div style="padding: 40px; text-align: center;">Loading amazing deals... ✨</div>';
 
-        try {
-            const res = await fetch(`${API_URL}/specials`);
-            const json = await res.json();
-            const deals = json.data;
+            try {
+                const res = await fetch(`${API_URL}/specials`);
+                const json = await res.json();
+                const deals = json.data;
 
-            this.mainContent.innerHTML = `
+                this.mainContent.innerHTML = `
                 <div class="fade-in" style="padding-bottom: 80px;">
                     <!-- Hero -->
                     <div style="background: linear-gradient(135deg, #FF9800, #FF5722); padding: 32px 24px; color: white;">
@@ -271,104 +314,104 @@ class App {
                     </div>
                 </div>
             `;
-        } catch (e) {
-            this.mainContent.innerHTML = `<div style="padding: 40px; text-align: center; color: red;">Failed to load deals. Check connection.</div>`;
+            } catch (e) {
+                this.mainContent.innerHTML = `<div style="padding: 40px; text-align: center; color: red;">Failed to load deals. Check connection.</div>`;
+            }
         }
-    }
 
 
-    filterCategory(category) {
-        this.mainContent.innerHTML = '';
-        this.mainContent.scrollTop = 0;
-        this.renderHome(category);
-    }
+        filterCategory(category) {
+            this.mainContent.innerHTML = '';
+            this.mainContent.scrollTop = 0;
+            this.renderHome(category);
+        }
 
     async fetchHotels() {
-        const response = await fetch(`${API_URL}/hotels`);
-        const json = await response.json();
-        HOTELS = json.data; // Update global for compatibility
-    }
+            const response = await fetch(`${API_URL}/hotels`);
+            const json = await response.json();
+            HOTELS = json.data; // Update global for compatibility
+        }
 
-    renderLoading() {
-        this.mainContent.innerHTML = `
+        renderLoading() {
+            this.mainContent.innerHTML = `
             <div style="height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column;">
                 <span class="material-symbols-rounded" style="font-size: 48px; color: var(--primary); animation: spin 1s infinite linear;">refresh</span>
                 <p style="margin-top: 16px; color: var(--text-light);">Connecting to server...</p>
                 <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
             </div>
         `;
-    }
+        }
 
-    attachNavListeners() {
-        this.navItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                const target = item.dataset.target;
-                this.navigate(target);
+        attachNavListeners() {
+            this.navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const target = item.dataset.target;
+                    this.navigate(target);
+                });
             });
-        });
-    }
-
-    navigate(view, state = {}) {
-        this.state.currentView = view;
-        if (state.hotelId) {
-            this.state.selectedHotel = HOTELS.find(h => h.id === state.hotelId);
         }
 
-        // Update Bottom Nav UI
-        this.navItems.forEach(item => {
-            if (item.dataset.target === view) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
+        navigate(view, state = {}) {
+            this.state.currentView = view;
+            if (state.hotelId) {
+                this.state.selectedHotel = HOTELS.find(h => h.id === state.hotelId);
             }
-        });
 
-        this.render();
-    }
+            // Update Bottom Nav UI
+            this.navItems.forEach(item => {
+                if (item.dataset.target === view) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
 
-    render() {
-        this.mainContent.innerHTML = '';
-        this.mainContent.scrollTop = 0;
-
-        switch (this.state.currentView) {
-            case 'home':
-                this.renderHome();
-                break;
-            case 'details':
-                this.renderDetails();
-                break;
-            case 'booking':
-                this.renderBooking();
-                break;
-            case 'payment':
-                this.renderPayment();
-                break;
-            case 'bookings':
-                this.renderMyBookings();
-                break;
-            case 'favorites':
-                this.renderSaved();
-                break;
-            case 'profile':
-                this.renderProfile();
-                break;
+            this.render();
         }
-    }
 
-    renderProfile() {
-        const user = JSON.parse(localStorage.getItem('alibag_user'));
+        render() {
+            this.mainContent.innerHTML = '';
+            this.mainContent.scrollTop = 0;
 
-        if (!user) {
-            this.renderLogin();
-        } else {
-            this.renderDashboard(user);
+            switch (this.state.currentView) {
+                case 'home':
+                    this.renderHome();
+                    break;
+                case 'details':
+                    this.renderDetails();
+                    break;
+                case 'booking':
+                    this.renderBooking();
+                    break;
+                case 'payment':
+                    this.renderPayment();
+                    break;
+                case 'bookings':
+                    this.renderMyBookings();
+                    break;
+                case 'favorites':
+                    this.renderSaved();
+                    break;
+                case 'profile':
+                    this.renderProfile();
+                    break;
+            }
         }
-    }
 
-    renderLogin(isRegister = false) {
-        const container = document.createElement('div');
-        container.className = 'fade-in';
-        container.innerHTML = `
+        renderProfile() {
+            const user = JSON.parse(localStorage.getItem('alibag_user'));
+
+            if (!user) {
+                this.renderLogin();
+            } else {
+                this.renderDashboard(user);
+            }
+        }
+
+        renderLogin(isRegister = false) {
+            const container = document.createElement('div');
+            container.className = 'fade-in';
+            container.innerHTML = `
              <div style="padding: 40px 24px; text-align: center;">
                 <div style="width: 80px; height: 80px; background: var(--primary-light); border-radius: 50%; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
                     <span class="material-symbols-rounded" style="font-size: 40px; color: var(--primary);">person</span>
@@ -399,50 +442,50 @@ class App {
                         </div>
                     </div>
                     `;
-        this.mainContent.innerHTML = '';
-        this.mainContent.appendChild(container);
+            this.mainContent.innerHTML = '';
+            this.mainContent.appendChild(container);
 
-        container.querySelector('#toggle-auth').onclick = (e) => {
-            e.preventDefault();
-            this.renderLogin(!isRegister);
-        };
+            container.querySelector('#toggle-auth').onclick = (e) => {
+                e.preventDefault();
+                this.renderLogin(!isRegister);
+            };
 
-        container.querySelector('#login-btn').onclick = async () => {
-            const email = container.querySelector('#login-email').value;
-            const password = container.querySelector('#login-pass').value;
-            const name = isRegister ? container.querySelector('#auth-name').value : null;
+            container.querySelector('#login-btn').onclick = async () => {
+                const email = container.querySelector('#login-email').value;
+                const password = container.querySelector('#login-pass').value;
+                const name = isRegister ? container.querySelector('#auth-name').value : null;
 
-            if (!email || !password || (isRegister && !name)) return alert('Please fill in all fields');
+                if (!email || !password || (isRegister && !name)) return alert('Please fill in all fields');
 
-            const endpoint = isRegister ? '/auth/register' : '/auth/login';
-            const body = isRegister ? { name, email, password } : { email, password };
+                const endpoint = isRegister ? '/auth/register' : '/auth/login';
+                const body = isRegister ? { name, email, password } : { email, password };
 
-            try {
-                const res = await fetch(`${API_URL}${endpoint}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                const data = await res.json();
+                try {
+                    const res = await fetch(`${API_URL}${endpoint}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    const data = await res.json();
 
-                if (data.success) {
-                    localStorage.setItem('alibag_user', JSON.stringify(data.user));
-                    this.renderProfile();
-                    if (isRegister) alert('Welcome to the family! 🌴');
-                } else {
-                    alert(data.message);
+                    if (data.success) {
+                        localStorage.setItem('alibag_user', JSON.stringify(data.user));
+                        this.renderProfile();
+                        if (isRegister) alert('Welcome to the family! 🌴');
+                    } else {
+                        alert(data.message);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert('Connection failed.');
                 }
-            } catch (e) {
-                console.error(e);
-                alert('Connection failed.');
-            }
-        };
-    }
+            };
+        }
 
-    renderDashboard(user) {
-        const container = document.createElement('div');
-        container.className = 'fade-in';
-        container.innerHTML = `
+        renderDashboard(user) {
+            const container = document.createElement('div');
+            container.className = 'fade-in';
+            container.innerHTML = `
                     <div style="padding: 24px;">
                         <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
                             <div style="width: 64px; height: 64px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 700;">
@@ -470,11 +513,11 @@ class App {
                         <h3 style="margin-bottom: 16px;">Account Settings</h3>
                         <div style="background: white; border-radius: 16px; box-shadow: var(--shadow-card); overflow: hidden;">
                             ${[
-                { icon: 'person', label: 'Personal Information' },
-                { icon: 'credit_card', label: 'Payments & Payouts' },
-                { icon: 'notifications', label: 'Notifications' },
-                { icon: 'shield', label: 'Privacy & Sharing' }
-            ].map(item => `
+                    { icon: 'person', label: 'Personal Information' },
+                    { icon: 'credit_card', label: 'Payments & Payouts' },
+                    { icon: 'notifications', label: 'Notifications' },
+                    { icon: 'shield', label: 'Privacy & Sharing' }
+                ].map(item => `
                         <div style="padding: 16px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #f5f5f5; cursor: pointer;">
                             <span class="material-symbols-rounded" style="color: var(--text-light);">${item.icon}</span>
                             <span style="flex: 1; font-weight: 500;">${item.label}</span>
@@ -488,21 +531,21 @@ class App {
                         </button>
                     </div>
                     `;
-        this.mainContent.appendChild(container);
+            this.mainContent.appendChild(container);
 
-        container.querySelector('#logout-btn').onclick = () => {
-            localStorage.removeItem('alibag_user');
-            this.renderProfile();
-        };
-    }
+            container.querySelector('#logout-btn').onclick = () => {
+                localStorage.removeItem('alibag_user');
+                this.renderProfile();
+            };
+        }
 
-    renderHome(filter = null) {
-        const header = document.createElement('div');
+        renderHome(filter = null) {
+            const header = document.createElement('div');
 
-        // Filter Data
-        const displayHotels = filter ? HOTELS.filter(h => h.category === filter || (filter === 'Couple' && h.category === 'Villa')) : HOTELS;
+            // Filter Data
+            const displayHotels = filter ? HOTELS.filter(h => h.category === filter || (filter === 'Couple' && h.category === 'Villa')) : HOTELS;
 
-        header.innerHTML = `
+            header.innerHTML = `
                     <h1 style="color: var(--primary);">Alibag.co.in 🌴</h1>
                     <p>Verified stays. Human confirmed.</p>
                     <div style="margin: 24px 0; display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;">
@@ -519,18 +562,18 @@ class App {
                 `).join('')}
                     </div>
                     `;
-        this.mainContent.appendChild(header);
+            this.mainContent.appendChild(header);
 
-        displayHotels.forEach((hotel, index) => {
-            const card = document.createElement('div');
-            card.className = 'hotel-card fade-in';
-            // card.onclick = () => this.navigate('details', {hotelId: hotel.id }); // Moved to content click
+            displayHotels.forEach((hotel, index) => {
+                const card = document.createElement('div');
+                card.className = 'hotel-card fade-in';
+                // card.onclick = () => this.navigate('details', {hotelId: hotel.id }); // Moved to content click
 
-            const images = hotel.images || [hotel.image];
-            let currentImgIdx = 0;
-            const cardId = `hotel-card-${hotel.id}`;
+                const images = hotel.images || [hotel.image];
+                let currentImgIdx = 0;
+                const cardId = `hotel-card-${hotel.id}`;
 
-            card.innerHTML = `
+                card.innerHTML = `
                     <div style="position: relative; height: 200px; background: #eee;">
                         <img id="${cardId}-img" src="${images[0]}" class="card-image" alt="${hotel.name}" style="transition: opacity 0.3s;">
 
@@ -571,58 +614,58 @@ class App {
                     </div>
                 </div>
             `;
-            this.mainContent.appendChild(card);
-        });
+                this.mainContent.appendChild(card);
+            });
 
-        // Global helpers for inline onclicks (Hack for vanilla JS scope)
-        window.nextImg = (id, prefix = 'hotel-card') => this.rotateImage(id, 1, prefix);
-        window.prevImg = (id, prefix = 'hotel-card') => this.rotateImage(id, -1, prefix);
-        window.app = this;
-    }
+            // Global helpers for inline onclicks (Hack for vanilla JS scope)
+            window.nextImg = (id, prefix = 'hotel-card') => this.rotateImage(id, 1, prefix);
+            window.prevImg = (id, prefix = 'hotel-card') => this.rotateImage(id, -1, prefix);
+            window.app = this;
+        }
 
-    rotateImage(id, dir, prefix = 'hotel-card') {
-        const hotel = HOTELS.find(h => h.id == id);
-        if (!hotel || !hotel.images) return;
+        rotateImage(id, dir, prefix = 'hotel-card') {
+            const hotel = HOTELS.find(h => h.id == id);
+            if (!hotel || !hotel.images) return;
 
-        const imgEl = document.getElementById(`${prefix}-${id}-img`);
-        if (!imgEl) return;
+            const imgEl = document.getElementById(`${prefix}-${id}-img`);
+            if (!imgEl) return;
 
-        let currentSrc = imgEl.src;
-        // Lax match to handle full URLs vs relative
-        let currentIdx = hotel.images.findIndex(img => currentSrc.includes(img) || img.includes(currentSrc));
-        if (currentIdx === -1) currentIdx = 0;
+            let currentSrc = imgEl.src;
+            // Lax match to handle full URLs vs relative
+            let currentIdx = hotel.images.findIndex(img => currentSrc.includes(img) || img.includes(currentSrc));
+            if (currentIdx === -1) currentIdx = 0;
 
-        let newIdx = currentIdx + dir;
-        if (newIdx >= hotel.images.length) newIdx = 0;
-        if (newIdx < 0) newIdx = hotel.images.length - 1;
+            let newIdx = currentIdx + dir;
+            if (newIdx >= hotel.images.length) newIdx = 0;
+            if (newIdx < 0) newIdx = hotel.images.length - 1;
 
-        // Transition
-        imgEl.style.opacity = '0.5';
-        setTimeout(() => {
-            imgEl.src = hotel.images[newIdx];
-            imgEl.style.opacity = '1';
-        }, 150);
+            // Transition
+            imgEl.style.opacity = '0.5';
+            setTimeout(() => {
+                imgEl.src = hotel.images[newIdx];
+                imgEl.style.opacity = '1';
+            }, 150);
 
-        // Update dots
-        hotel.images.forEach((_, i) => {
-            const dot = document.getElementById(`${prefix}-${id}-dot-${i}`);
-            if (dot) dot.style.background = i === newIdx ? 'white' : 'rgba(255,255,255,0.5)';
-        });
-    }
+            // Update dots
+            hotel.images.forEach((_, i) => {
+                const dot = document.getElementById(`${prefix}-${id}-dot-${i}`);
+                if (dot) dot.style.background = i === newIdx ? 'white' : 'rgba(255,255,255,0.5)';
+            });
+        }
 
-    renderDetails() {
-        const hotel = this.state.selectedHotel;
-        if (!hotel) return this.navigate('home');
+        renderDetails() {
+            const hotel = this.state.selectedHotel;
+            if (!hotel) return this.navigate('home');
 
-        // CLEAR CONTENT TO PREVENT DUPLICATES
-        this.mainContent.innerHTML = '';
-        this.mainContent.scrollTop = 0;
+            // CLEAR CONTENT TO PREVENT DUPLICATES
+            this.mainContent.innerHTML = '';
+            this.mainContent.scrollTop = 0;
 
-        const images = hotel.images ? hotel.images : [hotel.image];
+            const images = hotel.images ? hotel.images : [hotel.image];
 
-        const container = document.createElement('div');
-        container.className = 'fade-in';
-        container.innerHTML = `
+            const container = document.createElement('div');
+            container.className = 'fade-in';
+            container.innerHTML = `
             <div class="details-hero" style="overflow-x: auto; display: flex; scroll-snap-type: x mandatory;">
                 <button class="icon-btn back-btn" id="back-btn" style="position: fixed;">
                     <span class="material-symbols-rounded">arrow_back</span>
@@ -720,7 +763,7 @@ class App {
                                     <p style="font-size: 13px; font-style: italic;">"${review.reply}"</p>
                                 </div>
                             ` : ''
-            }
+                }
                         </div >
         `).join('') : '<p>No reviews yet. Be the first!</p>'}
 
@@ -736,20 +779,20 @@ class App {
             </div>
         `;
 
-        this.mainContent.appendChild(container);
+            this.mainContent.appendChild(container);
 
-        container.querySelector('#back-btn').onclick = () => this.navigate('home');
-        container.querySelector('#book-now-btn').onclick = () => this.navigate('booking', { hotelId: hotel.id });
-    }
+            container.querySelector('#back-btn').onclick = () => this.navigate('home');
+            container.querySelector('#book-now-btn').onclick = () => this.navigate('booking', { hotelId: hotel.id });
+        }
 
-    renderReviewModal(hotelId) {
-        const modal = document.createElement('div');
-        modal.style.cssText = `
+        renderReviewModal(hotelId) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 2000;
             display: flex; align-items: end; justify-content: center;
         `;
-        modal.innerHTML = `
+            modal.innerHTML = `
              <div class="fade-in-up" style="
                 background: white; width: 100%; max-width: 500px;
                 border-radius: 24px 24px 0 0; padding: 24px;
@@ -777,84 +820,84 @@ class App {
                 <button class="btn btn-primary" id="submit-review" style="width: 100%;">Submit Review</button>
              </div>
         `;
-        document.body.appendChild(modal);
+            document.body.appendChild(modal);
 
-        // Star Logic
-        const stars = modal.querySelectorAll('.star-btn');
-        stars.forEach(star => {
-            star.onclick = () => {
-                const val = parseInt(star.dataset.val);
-                document.getElementById('review-rating').value = val;
-                stars.forEach((s, i) => {
-                    s.style.color = i < val ? '#FFB400' : '#ddd';
-                });
-            };
-        });
+            // Star Logic
+            const stars = modal.querySelectorAll('.star-btn');
+            stars.forEach(star => {
+                star.onclick = () => {
+                    const val = parseInt(star.dataset.val);
+                    document.getElementById('review-rating').value = val;
+                    stars.forEach((s, i) => {
+                        s.style.color = i < val ? '#FFB400' : '#ddd';
+                    });
+                };
+            });
 
-        // Close Logic
-        modal.querySelector('#close-modal').onclick = () => document.body.removeChild(modal);
-        modal.onclick = (e) => { if (e.target === modal) document.body.removeChild(modal); };
+            // Close Logic
+            modal.querySelector('#close-modal').onclick = () => document.body.removeChild(modal);
+            modal.onclick = (e) => { if (e.target === modal) document.body.removeChild(modal); };
 
-        // Submit Logic
-        modal.querySelector('#submit-review').onclick = async () => {
-            const rating = document.getElementById('review-rating').value;
-            const text = document.getElementById('review-text').value;
-            const user = JSON.parse(localStorage.getItem('alibag_user'));
+            // Submit Logic
+            modal.querySelector('#submit-review').onclick = async () => {
+                const rating = document.getElementById('review-rating').value;
+                const text = document.getElementById('review-text').value;
+                const user = JSON.parse(localStorage.getItem('alibag_user'));
 
-            if (rating == 0) return alert('Please select a rating!');
-            if (text.length < 10) return alert('Please tell us a bit more (min 10 chars).');
+                if (rating == 0) return alert('Please select a rating!');
+                if (text.length < 10) return alert('Please tell us a bit more (min 10 chars).');
 
-            // Content Moderation (Client-side fast check)
-            const forbidden = ['damn', 'stupid', 'awful', 'hate', 'badword'];
-            const hasForbidden = forbidden.some(w => text.toLowerCase().includes(w));
-            const hasPhone = /\b\d{10}\b/.test(text);
-            const hasEmail = /\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b/.test(text);
+                // Content Moderation (Client-side fast check)
+                const forbidden = ['damn', 'stupid', 'awful', 'hate', 'badword'];
+                const hasForbidden = forbidden.some(w => text.toLowerCase().includes(w));
+                const hasPhone = /\b\d{10}\b/.test(text);
+                const hasEmail = /\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b/.test(text);
 
-            if (hasForbidden || hasPhone || hasEmail) {
-                return alert('Review contains restricted content (profanity or personal info). Please revise.');
-            }
-
-            try {
-                // Submit to Backend
-                const res = await fetch(`${API_URL}/hotels/${hotelId}/reviews`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user: user ? user.name : 'Anonymous',
-                        userId: user ? user.id : null,
-                        rating: rating,
-                        text: text
-                    })
-                });
-
-                const data = await res.json();
-
-                if (!data.success) throw new Error(data.message || 'Failed');
-
-                // Update local hotel data with new rating/review
-                const hotel = HOTELS.find(h => h.id == hotelId);
-                if (hotel) {
-                    // The backend returns the new review and rating, let's update local state
-                    // Ideally we re-fetch, but for speed we patch:
-                    if (!hotel.reviews) hotel.reviews = [];
-                    hotel.reviews.unshift(data.data);
-                    if (data.newRating) hotel.rating = data.newRating;
+                if (hasForbidden || hasPhone || hasEmail) {
+                    return alert('Review contains restricted content (profanity or personal info). Please revise.');
                 }
 
-                document.body.removeChild(modal);
-                this.renderDetails(); // Re-render to show new review
-            } catch (e) {
-                console.error(e);
-                alert('Failed to submit review.');
-            }
-        };
-    }
+                try {
+                    // Submit to Backend
+                    const res = await fetch(`${API_URL}/hotels/${hotelId}/reviews`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user: user ? user.name : 'Anonymous',
+                            userId: user ? user.id : null,
+                            rating: rating,
+                            text: text
+                        })
+                    });
 
-    renderBooking() {
-        const hotel = this.state.selectedHotel;
-        const container = document.createElement('div');
-        container.className = 'fade-in';
-        container.innerHTML = `
+                    const data = await res.json();
+
+                    if (!data.success) throw new Error(data.message || 'Failed');
+
+                    // Update local hotel data with new rating/review
+                    const hotel = HOTELS.find(h => h.id == hotelId);
+                    if (hotel) {
+                        // The backend returns the new review and rating, let's update local state
+                        // Ideally we re-fetch, but for speed we patch:
+                        if (!hotel.reviews) hotel.reviews = [];
+                        hotel.reviews.unshift(data.data);
+                        if (data.newRating) hotel.rating = data.newRating;
+                    }
+
+                    document.body.removeChild(modal);
+                    this.renderDetails(); // Re-render to show new review
+                } catch (e) {
+                    console.error(e);
+                    alert('Failed to submit review.');
+                }
+            };
+        }
+
+        renderBooking() {
+            const hotel = this.state.selectedHotel;
+            const container = document.createElement('div');
+            container.className = 'fade-in';
+            container.innerHTML = `
             <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
                 <button class="icon-btn" id="back-btn-booking">
                     <span class="material-symbols-rounded">arrow_back</span>
@@ -917,83 +960,83 @@ class App {
             </button>
         `;
 
-        this.mainContent.appendChild(container);
+            this.mainContent.appendChild(container);
 
-        const checkIn = container.querySelector('#check-in');
-        const checkOut = container.querySelector('#check-out');
-        const confirmBtn = container.querySelector('#confirm-dates-btn');
-        const priceText = container.querySelector('#price-calc-text');
-        const priceTotal = container.querySelector('#price-calc-total');
-        const finalTotal = container.querySelector('#final-total');
-        const roomRadios = container.querySelectorAll('input[name="room-type"]');
+            const checkIn = container.querySelector('#check-in');
+            const checkOut = container.querySelector('#check-out');
+            const confirmBtn = container.querySelector('#confirm-dates-btn');
+            const priceText = container.querySelector('#price-calc-text');
+            const priceTotal = container.querySelector('#price-calc-total');
+            const finalTotal = container.querySelector('#final-total');
+            const roomRadios = container.querySelectorAll('input[name="room-type"]');
 
-        // Set min date
-        const today = new Date().toISOString().split('T')[0];
-        checkIn.min = today;
-        checkOut.min = today;
+            // Set min date
+            const today = new Date().toISOString().split('T')[0];
+            checkIn.min = today;
+            checkOut.min = today;
 
-        const updatePrice = () => {
-            // Get selected room price
-            let currentPrice = hotel.price;
-            let selectedRoom = null;
+            const updatePrice = () => {
+                // Get selected room price
+                let currentPrice = hotel.price;
+                let selectedRoom = null;
 
-            const checkedRadio = container.querySelector('input[name="room-type"]:checked');
-            if (checkedRadio && hotel.roomTypes) {
-                const idx = parseInt(checkedRadio.value);
-                currentPrice = hotel.roomTypes[idx].price;
-                selectedRoom = hotel.roomTypes[idx];
-            }
-
-            if (checkIn.value && checkOut.value) {
-                const start = new Date(checkIn.value);
-                const end = new Date(checkOut.value);
-                const diffTime = Math.abs(end - start);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (diffDays > 0) {
-                    const total = diffDays * currentPrice;
-                    priceText.textContent = `${diffDays} night${diffDays > 1 ? 's' : ''}`;
-                    priceTotal.textContent = `₹${currentPrice} x ${diffDays}`;
-                    finalTotal.textContent = `₹${total}`;
-
-                    confirmBtn.disabled = false;
-                    confirmBtn.style.opacity = '1';
-                    confirmBtn.style.cursor = 'pointer';
-
-                    this.state.tempBooking = {
-                        hotel: hotel,
-                        roomType: selectedRoom,
-                        checkIn: checkIn.value,
-                        checkOut: checkOut.value,
-                        nights: diffDays,
-                        totalPrice: total
-                    };
-                } else {
-                    confirmBtn.disabled = true;
-                    confirmBtn.style.opacity = '0.5';
+                const checkedRadio = container.querySelector('input[name="room-type"]:checked');
+                if (checkedRadio && hotel.roomTypes) {
+                    const idx = parseInt(checkedRadio.value);
+                    currentPrice = hotel.roomTypes[idx].price;
+                    selectedRoom = hotel.roomTypes[idx];
                 }
-            }
-        };
 
-        checkIn.addEventListener('change', updatePrice);
-        checkOut.addEventListener('change', updatePrice);
-        roomRadios.forEach(r => r.addEventListener('change', updatePrice));
+                if (checkIn.value && checkOut.value) {
+                    const start = new Date(checkIn.value);
+                    const end = new Date(checkOut.value);
+                    const diffTime = Math.abs(end - start);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        container.querySelector('#back-btn-booking').onclick = () => this.navigate('details', { hotelId: hotel.id });
+                    if (diffDays > 0) {
+                        const total = diffDays * currentPrice;
+                        priceText.textContent = `${diffDays} night${diffDays > 1 ? 's' : ''}`;
+                        priceTotal.textContent = `₹${currentPrice} x ${diffDays}`;
+                        finalTotal.textContent = `₹${total}`;
 
-        confirmBtn.onclick = () => {
-            if (!this.state.tempBooking) return;
-            this.navigate('payment'); // State is already in tempBooking
-        };
-    }
+                        confirmBtn.disabled = false;
+                        confirmBtn.style.opacity = '1';
+                        confirmBtn.style.cursor = 'pointer';
 
-    renderPayment() {
-        if (!this.state.tempBooking) return this.navigate('home');
-        const booking = this.state.tempBooking;
+                        this.state.tempBooking = {
+                            hotel: hotel,
+                            roomType: selectedRoom,
+                            checkIn: checkIn.value,
+                            checkOut: checkOut.value,
+                            nights: diffDays,
+                            totalPrice: total
+                        };
+                    } else {
+                        confirmBtn.disabled = true;
+                        confirmBtn.style.opacity = '0.5';
+                    }
+                }
+            };
 
-        const container = document.createElement('div');
-        container.className = 'fade-in';
-        container.innerHTML = `
+            checkIn.addEventListener('change', updatePrice);
+            checkOut.addEventListener('change', updatePrice);
+            roomRadios.forEach(r => r.addEventListener('change', updatePrice));
+
+            container.querySelector('#back-btn-booking').onclick = () => this.navigate('details', { hotelId: hotel.id });
+
+            confirmBtn.onclick = () => {
+                if (!this.state.tempBooking) return;
+                this.navigate('payment'); // State is already in tempBooking
+            };
+        }
+
+        renderPayment() {
+            if (!this.state.tempBooking) return this.navigate('home');
+            const booking = this.state.tempBooking;
+
+            const container = document.createElement('div');
+            container.className = 'fade-in';
+            container.innerHTML = `
             <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
                 <button class="icon-btn" id="back-btn-payment">
                     <span class="material-symbols-rounded">arrow_back</span>
@@ -1022,53 +1065,53 @@ class App {
             </button>
          `;
 
-        this.mainContent.appendChild(container);
+            this.mainContent.appendChild(container);
 
-        container.querySelector('#back-btn-payment').onclick = () => this.navigate('booking');
+            container.querySelector('#back-btn-payment').onclick = () => this.navigate('booking');
 
-        container.querySelector('#pay-btn').onclick = () => {
-            this.state.bookings.push({
-                ...booking,
-                id: Date.now(),
-                status: 'PENDING_CONFIRMATION'
-            });
-            this.state.tempBooking = null;
-            // Alibag.co.in 5-min promise alert
-            alert('Request Sent! 📨\n\nWe are checking with the host (Kenji). You will receive a confirmation within 5 minutes.');
-            this.navigate('bookings');
-        };
-    }
+            container.querySelector('#pay-btn').onclick = () => {
+                this.state.bookings.push({
+                    ...booking,
+                    id: Date.now(),
+                    status: 'PENDING_CONFIRMATION'
+                });
+                this.state.tempBooking = null;
+                // Alibag.co.in 5-min promise alert
+                alert('Request Sent! 📨\n\nWe are checking with the host (Kenji). You will receive a confirmation within 5 minutes.');
+                this.navigate('bookings');
+            };
+        }
 
-    renderMyBookings() {
-        this.mainContent.innerHTML = `<h2>My Trips</h2>`;
+        renderMyBookings() {
+            this.mainContent.innerHTML = `<h2>My Trips</h2>`;
 
-        if (this.state.bookings.length === 0) {
-            this.mainContent.innerHTML += `
+            if (this.state.bookings.length === 0) {
+                this.mainContent.innerHTML += `
                 <div style="text-align: center; padding: 48px; color: var(--text-light);">
                     <span class="material-symbols-rounded" style="font-size: 48px;">beach_access</span>
                     <p>No trips planned yet.</p>
                 </div>
             `;
-            return;
-        }
+                return;
+            }
 
-        const list = document.createElement('div');
-        list.className = 'fade-in';
-        list.style.display = 'flex';
-        list.style.flexDirection = 'column';
-        list.style.gap = '16px';
+            const list = document.createElement('div');
+            list.className = 'fade-in';
+            list.style.display = 'flex';
+            list.style.flexDirection = 'column';
+            list.style.gap = '16px';
 
-        this.state.bookings.forEach(booking => {
-            const isPending = booking.status === 'PENDING_CONFIRMATION';
-            const statusColor = isPending ? '#FFB400' : 'var(--success)';
+            this.state.bookings.forEach(booking => {
+                const isPending = booking.status === 'PENDING_CONFIRMATION';
+                const statusColor = isPending ? '#FFB400' : 'var(--success)';
 
-            const item = document.createElement('div');
-            item.style.cssText = `
+                const item = document.createElement('div');
+                item.style.cssText = `
                 background: white; padding: 16px; border-radius: var(--radius-md);
                 box-shadow: var(--shadow-card); display: flex; gap: 16px; align-items: center; margin-bottom: 16px;
             `;
-            const mainImage = booking.hotel.images ? booking.hotel.images[0] : booking.hotel.image;
-            item.innerHTML = `
+                const mainImage = booking.hotel.images ? booking.hotel.images[0] : booking.hotel.image;
+                item.innerHTML = `
                 <img src="${mainImage}" style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover;">
                 <div style="flex: 1;">
                     <h3 style="font-size: 16px; margin-bottom: 4px;">${booking.hotel.name}</h3>
@@ -1088,54 +1131,54 @@ class App {
                     </div>
                 </div>
             `;
-            list.appendChild(item);
-        });
-        this.mainContent.appendChild(list);
-    }
+                list.appendChild(item);
+            });
+            this.mainContent.appendChild(list);
+        }
 
-    renderPlaceholder(title) {
-        this.mainContent.innerHTML = `
+        renderPlaceholder(title) {
+            this.mainContent.innerHTML = `
             <h2>${title.charAt(0).toUpperCase() + title.slice(1)}</h2>
             <p>Coming soon...</p>
         `;
-    }
-
-    toggleSave(hotelId) {
-        let saved = JSON.parse(localStorage.getItem('alibag_saved')) || [];
-        const idx = saved.indexOf(hotelId);
-
-        let msg = '';
-        if (idx === -1) {
-            saved.push(hotelId);
-            msg = 'Saved to Wishlist ❤️';
-        } else {
-            saved.splice(idx, 1);
-            msg = 'Removed from Wishlist 💔';
         }
 
-        localStorage.setItem('alibag_saved', JSON.stringify(saved));
-        this.render();
+        toggleSave(hotelId) {
+            let saved = JSON.parse(localStorage.getItem('alibag_saved')) || [];
+            const idx = saved.indexOf(hotelId);
 
-        const toast = document.createElement('div');
-        toast.style.cssText = `
+            let msg = '';
+            if (idx === -1) {
+                saved.push(hotelId);
+                msg = 'Saved to Wishlist ❤️';
+            } else {
+                saved.splice(idx, 1);
+                msg = 'Removed from Wishlist 💔';
+            }
+
+            localStorage.setItem('alibag_saved', JSON.stringify(saved));
+            this.render();
+
+            const toast = document.createElement('div');
+            toast.style.cssText = `
             position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
             background: rgba(0,0,0,0.8); color: white; padding: 12px 24px;
             border-radius: 24px; font-size: 13px; z-index: 3000;
             animation: fadeIn 0.3s;
         `;
-        toast.textContent = msg;
-        document.body.appendChild(toast);
-        setTimeout(() => document.body.removeChild(toast), 2000);
-    }
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => document.body.removeChild(toast), 2000);
+        }
 
-    isSaved(hotelId) {
-        const saved = JSON.parse(localStorage.getItem('alibag_saved')) || [];
-        return saved.includes(hotelId);
-    }
+        isSaved(hotelId) {
+            const saved = JSON.parse(localStorage.getItem('alibag_saved')) || [];
+            return saved.includes(hotelId);
+        }
 
-    renderAboutUs() {
-        // SEO Content
-        this.mainContent.innerHTML = `
+        renderAboutUs() {
+            // SEO Content
+            this.mainContent.innerHTML = `
             <div class="fade-in" style="padding-bottom: 40px;">
                 <div style="background: var(--primary-light); padding: 40px 24px; text-align: center; border-radius: 0 0 24px 24px; margin-bottom: 32px; margin-top: -24px;">
                     <div style="width: 64px; height: 64px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 16px; color: var(--primary);">
@@ -1178,9 +1221,9 @@ class App {
                         <h2 style="font-size: 20px; margin-bottom: 12px;">🥥 Our Offerings</h2>
                         <ul style="list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             ${[
-                'Beachfront Resorts', 'Private Pool Villas', 'Jungle Camping',
-                'Couple Friendly Stays', 'Group Cottages', 'Pet Friendly Stays'
-            ].map(item => `
+                    'Beachfront Resorts', 'Private Pool Villas', 'Jungle Camping',
+                    'Couple Friendly Stays', 'Group Cottages', 'Pet Friendly Stays'
+                ].map(item => `
                 <li style="
                     background: white; padding: 12px; border-radius: 8px; border: 1px solid #eee;
                     font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;
@@ -1206,14 +1249,14 @@ class App {
                 </div>
             </div>
         `;
-    }
+        }
 
-    renderSaved() {
-        // Filter hotels that are in the saved list
-        const savedIds = JSON.parse(localStorage.getItem('alibag_saved')) || [];
-        const savedHotels = HOTELS.filter(h => savedIds.includes(h.id));
+        renderSaved() {
+            // Filter hotels that are in the saved list
+            const savedIds = JSON.parse(localStorage.getItem('alibag_saved')) || [];
+            const savedHotels = HOTELS.filter(h => savedIds.includes(h.id));
 
-        this.mainContent.innerHTML = `
+            this.mainContent.innerHTML = `
             <div class="fade-in" style="padding: 24px;">
                 <h2 style="font-size: 24px; margin-bottom: 24px;">My Wishlist (${savedHotels.length}) ❤️</h2>
                 
@@ -1226,12 +1269,12 @@ class App {
                 ` : `
                 <div style="display: grid; gap: 24px;">
                         ${savedHotels.map(hotel => {
-            const images = hotel.images || ['https://via.placeholder.com/400x300'];
-            const nearness = hotel.description && (hotel.description.includes('Within') || hotel.description.includes('Beach-Touch'))
-                ? hotel.description.split('.')[0]
-                : null;
+                const images = hotel.images || ['https://via.placeholder.com/400x300'];
+                const nearness = hotel.description && (hotel.description.includes('Within') || hotel.description.includes('Beach-Touch'))
+                    ? hotel.description.split('.')[0]
+                    : null;
 
-            return `
+                return `
                             <div class="card" onclick="app.navigate('details', { hotelId: ${hotel.id} })">
                                 <div style="position: relative; height: 200px; background: #eee;">
                                     <img src="${images[0]}" class="card-image">
@@ -1279,22 +1322,22 @@ class App {
                                 </div>
                             </div>
                            `;
-        }).join('')
-            }
+            }).join('')
+                }
                     </div >
         `}
             </div>
         `;
-    }
+        }
 
-    renderNotifications() {
-        // Mock Notifications
-        const notifs = [
-            { title: "Welcome to Alibag!", body: "Find your perfect weekend getaway.", time: "Just now", icon: "celebration" },
-            { title: "Flash Deal ⚡", body: "20% off on Jungle Stays this weekend.", time: "2 hours ago", icon: "local_offer" }
-        ];
+        renderNotifications() {
+            // Mock Notifications
+            const notifs = [
+                { title: "Welcome to Alibag!", body: "Find your perfect weekend getaway.", time: "Just now", icon: "celebration" },
+                { title: "Flash Deal ⚡", body: "20% off on Jungle Stays this weekend.", time: "2 hours ago", icon: "local_offer" }
+            ];
 
-        this.mainContent.innerHTML = `
+            this.mainContent.innerHTML = `
             <div class="fade-in" style="padding: 24px;">
                 <h2 style="font-size: 24px; margin-bottom: 24px;">Notifications 🔔</h2>
                 <div style="display: flex; flex-direction: column; gap: 16px;">
@@ -1313,34 +1356,34 @@ class App {
                 </div>
             </div>
         `;
-    }
-    setupMenu() {
-        // Define Menu Structure
-        const menuItems = [
-            // Stays Dropdown Group
-            {
-                id: 'stays-group',
-                icon: 'bed',
-                label: 'Stays',
-                isDropdown: true,
-                children: [
-                    { icon: 'beach_access', label: 'Beach Stays', action: () => this.filterCategory('Beach') },
-                    { icon: 'forest', label: 'Jungle Stays', action: () => this.filterCategory('Jungle') },
-                    { icon: 'camping', label: 'Camping', action: () => this.filterCategory('Camping') }
-                ]
-            },
-            { icon: 'local_offer', label: 'Special Deals', action: () => this.renderDeals() },
-            { icon: 'favorite', label: 'Saved', action: () => this.renderSaved() },
-            { icon: 'info', label: 'About Us', action: () => this.renderAboutUs() },
-            { icon: 'admin_panel_settings', label: 'Admin Login', action: () => this.renderLoginModal() }
-        ];
+        }
+        setupMenu() {
+            // Define Menu Structure
+            const menuItems = [
+                // Stays Dropdown Group
+                {
+                    id: 'stays-group',
+                    icon: 'bed',
+                    label: 'Stays',
+                    isDropdown: true,
+                    children: [
+                        { icon: 'beach_access', label: 'Beach Stays', action: () => this.filterCategory('Beach') },
+                        { icon: 'forest', label: 'Jungle Stays', action: () => this.filterCategory('Jungle') },
+                        { icon: 'camping', label: 'Camping', action: () => this.filterCategory('Camping') }
+                    ]
+                },
+                { icon: 'local_offer', label: 'Special Deals', action: () => this.renderDeals() },
+                { icon: 'favorite', label: 'Saved', action: () => this.renderSaved() },
+                { icon: 'info', label: 'About Us', action: () => this.renderAboutUs() },
+                { icon: 'admin_panel_settings', label: 'Admin Login', action: () => this.renderLoginModal() }
+            ];
 
-        const container = this.sideMenu.querySelector('.menu-items');
+            const container = this.sideMenu.querySelector('.menu-items');
 
-        // Helper to render items
-        const renderItem = (item, index) => {
-            if (item.isDropdown) {
-                return `
+            // Helper to render items
+            const renderItem = (item, index) => {
+                if (item.isDropdown) {
+                    return `
                     <div class="menu-item" onclick="app.toggleSubMenu('${item.id}')" style="justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <span class="material-symbols-rounded" style="color: var(--text-light);">${item.icon}</span>
@@ -1357,16 +1400,16 @@ class App {
         `).join('')}
                     </div>
                 `;
-            }
-            return `
+                }
+                return `
                 <div class="menu-item" onclick="app.menuAction(${index})">
                     <span class="material-symbols-rounded" style="color: var(--text-light);">${item.icon}</span>
                     <span style="font-weight: 500;">${item.label}</span>
                 </div>
             `;
-        };
+            };
 
-        container.innerHTML = `
+            container.innerHTML = `
             <div id="menu-header" style="padding: 24px; border-bottom: 1px solid #eee; margin-bottom: 16px; cursor: pointer;">
                 <h2 style="font-size: 24px; color: var(--primary);">Explore Alibag 🌴</h2>
                 <p style="color: var(--text-light); font-size: 13px;">Your gateway to paradise.</p>
@@ -1374,53 +1417,53 @@ class App {
             ${menuItems.map((item, i) => renderItem(item, i)).join('')}
         `;
 
-        // Header Click Action -> Home
-        container.querySelector('#menu-header').onclick = () => {
-            this.toggleMenu(false);
-            this.navigate('home');
-        };
+            // Header Click Action -> Home
+            container.querySelector('#menu-header').onclick = () => {
+                this.toggleMenu(false);
+                this.navigate('home');
+            };
 
-        // Store items for callback
-        this.menuItemsData = menuItems;
+            // Store items for callback
+            this.menuItemsData = menuItems;
 
-        // Restore Event Listeners
-        if (this.menuBtn) this.menuBtn.onclick = () => this.toggleMenu(true);
-        if (this.overlay) this.overlay.onclick = () => this.toggleMenu(false);
-    }
-
-    toggleSubMenu(id) {
-        const el = document.getElementById(id);
-        const arrow = document.getElementById(id + '-arrow');
-        if (el) {
-            const isHidden = el.style.display === 'none';
-            el.style.display = isHidden ? 'block' : 'none';
-            if (arrow) arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+            // Restore Event Listeners
+            if (this.menuBtn) this.menuBtn.onclick = () => this.toggleMenu(true);
+            if (this.overlay) this.overlay.onclick = () => this.toggleMenu(false);
         }
-    }
 
-    menuAction(index, childIndex = null) {
-        this.toggleMenu(false);
-        const item = this.menuItemsData[index];
-        if (childIndex !== null && item.children) {
-            item.children[childIndex].action();
-        } else if (item.action) {
-            item.action();
-        }
-    }
-
-    selectRoomForBooking(roomIdx, hotelId) {
-        const hotel = HOTELS.find(h => h.id === hotelId);
-        if (!hotel || !hotel.roomTypes) return;
-
-        this.navigate('booking', { hotelId: hotel.id });
-
-        // Helper to check the radio button after navigation
-        setTimeout(() => {
-            const radios = document.querySelectorAll('input[name="room-type"]');
-            if (radios[roomIdx]) {
-                radios[roomIdx].click();
+        toggleSubMenu(id) {
+            const el = document.getElementById(id);
+            const arrow = document.getElementById(id + '-arrow');
+            if (el) {
+                const isHidden = el.style.display === 'none';
+                el.style.display = isHidden ? 'block' : 'none';
+                if (arrow) arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
             }
-        }, 100);
+        }
+
+        menuAction(index, childIndex = null) {
+            this.toggleMenu(false);
+            const item = this.menuItemsData[index];
+            if (childIndex !== null && item.children) {
+                item.children[childIndex].action();
+            } else if (item.action) {
+                item.action();
+            }
+        }
+
+        selectRoomForBooking(roomIdx, hotelId) {
+            const hotel = HOTELS.find(h => h.id === hotelId);
+            if (!hotel || !hotel.roomTypes) return;
+
+            this.navigate('booking', { hotelId: hotel.id });
+
+            // Helper to check the radio button after navigation
+            setTimeout(() => {
+                const radios = document.querySelectorAll('input[name="room-type"]');
+                if (radios[roomIdx]) {
+                    radios[roomIdx].click();
+                }
+            }, 100);
+        }
     }
-}
 window.app = new App();
