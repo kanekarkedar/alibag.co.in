@@ -1393,10 +1393,10 @@ class App {
                     </div>
                     <div id="${item.id}" style="display: none; padding-left: 12px; overflow: hidden; transition: max-height 0.3s ease-out;">
                         ${item.children.map((child, childIdx) => `
-                <div> class="menu-item" onclick = "app.menuAction(${index}, ${childIdx})" style = "font-size: 14px;" >
+                        <div class="menu-item" onclick="app.menuAction(${index}, ${childIdx})" style="font-size: 14px;">
                                 <span class="material-symbols-rounded" style="color: var(--text-light); font-size: 20px;">${child.icon}</span>
                                 <span style="font-weight: 500;">${child.label}</span>
-                            </div >
+                            </div>
         `).join('')}
                     </div>
                 `;
