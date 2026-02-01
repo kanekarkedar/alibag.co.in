@@ -1,7 +1,7 @@
 // API Configuration
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'http://localhost:3000/api' 
-    : 'https://replace-me-with-your-render-url.onrender.com/api';
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000/api'
+    : 'https://alibag-co-in.onrender.com/api';
 let HOTELS = []; // Will be populated from API
 
 class App {
@@ -36,7 +36,12 @@ class App {
             this.attachNavListeners();
         } catch (error) {
             console.error('Failed to load data:', error);
-            this.mainContent.innerHTML = `<div style="padding: 24px; color: red;">Error connecting to server. Please ensure the backend is running.</div>`;
+            this.mainContent.innerHTML = `<div style="padding: 24px; color: red;">
+                <h3>Connection Error</h3>
+                <p>Could not connect to: ${API_URL}</p>
+                <p>Details: ${error.message}</p>
+                <p>Make sure you are not blocking the site.</p>
+            </div>`;
         }
     }
 
