@@ -222,4 +222,44 @@ p { font-size: 15px; color: var(--text-light); line-height: 1.5; }
     to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(100%); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+.fade-in-up { animation: slideUp 0.3s ease-out forwards; }
+
+/* Card Hover Effects (Desktop) */
+@media (hover: hover) {
+    .hotel-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .nav-item:hover {
+        color: var(--primary);
+    }
+    
+    .icon-btn:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+}
+
+/* Skeleton Loading Effect */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+}
