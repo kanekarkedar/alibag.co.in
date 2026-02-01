@@ -3,7 +3,7 @@ const API_URL = window.location.hostname === 'localhost' || window.location.host
     ? 'http://localhost:3000/api'
     : 'https://alibag-co-in.onrender.com/api';
 
-console.log('CuteStay App v2.1 - Loaded'); // Cache buster
+console.log('CuteStay App v2.2 - Loaded'); // Cache buster
 let HOTELS = []; // Will be populated from API
 
 class App {
