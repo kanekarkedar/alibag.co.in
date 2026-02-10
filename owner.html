@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Portal | Alibag.co.in 🌴</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        :root {
+            --primary: #FF385C;
+            --secondary: #00B894;
+            --bg: #F7F7F7;
+            --text: #222222;
+            --text-light: #717171;
+            --radius: 16px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        p {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .selector-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            outline: none;
+        }
+
+        /* Calendar Styles */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+
+        .day-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-light);
+            padding-bottom: 8px;
+        }
+
+        .day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 1px solid #f0f0f0;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .day:hover {
+            background: #f9f9f9;
+        }
+
+        .day.today {
+            border-color: var(--primary);
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .day.blocked {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+
+        .day.blocked::after {
+            content: 'OCCUPIED';
+            font-size: 7px;
+            font-weight: 700;
+            position: absolute;
+            bottom: 4px;
+        }
+
+        .day.empty {
+            cursor: default;
+            border: none;
+        }
+
+        .day.empty:hover {
+            background: transparent;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:active {
+            opacity: 0.8;
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+
+        .btn-poll {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            display: none;
+            z-index: 1000;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <span class="material-symbols-rounded">beach_access</span>
+            <span>Alibag Owner</span>
+        </div>
+        <div id="user-info" style="font-size: 12px; color: var(--text-light);">Loading...</div>
+    </header>
+
+    <div class="card">
+        <h1>Availability Manager</h1>
+        <p>Tap a date to mark it as occupied or available. The user app will update instantly.</p>
+
+        <div class="selector-group">
+            <label>Select Your Property & Room</label>
+            <select id="room-selector">
+                <option value="">Selecting properties...</option>
+            </select>
+        </div>
+
+        <div id="calendar-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 600;">
+            <div id="current-month">February 2026</div>
+            <div style="display: flex; gap: 16px;">
+                <span class="material-symbols-rounded"
+                    style="cursor: pointer; color: var(--text-light);">chevron_left</span>
+                <span class="material-symbols-rounded"
+                    style="cursor: pointer; color: var(--text-light);">chevron_right</span>
+            </div>
+        </div>
+
+        <div class="calendar-grid" id="calendar-body">
+            <!-- Days injected here -->
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-whatsapp" onclick="portal.shareOnWhatsApp()">
+                <span class="material-symbols-rounded" style="font-size: 20px;">chat</span>
+                Share Check
+            </button>
+            <button class="btn btn-poll" onclick="portal.copyPollTemplate()">
+                <span class="material-symbols-rounded" style="font-size: 20px;">content_copy</span>
+                Copy Poll
+            </button>
+        </div>
+    </div>
+
+    <div id="toast">Copied to clipboard!</div>
+    <div class="loading-overlay" id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+    <script>
+        const API_URL = '/api';
+
+        // Firebase Config (Must match main app)
+        const firebaseConfig = {
+            authDomain: "alibag-co-in.firebaseapp.com",
+            projectId: "alibag-co-in",
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        class OwnerPortal {
+            constructor() {
+                this.state = {
+                    user: null,
+                    token: null,
+                    rooms: [],
+                    selectedRoomId: null,
+                    blockedDates: [],
+                    currentMonth: new Date().getMonth(),
+                    currentYear: new Date().getFullYear()
+                };
+                this.init();
+            }
+
+            async init() {
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        this.state.user = user;
+                        this.state.token = await user.getIdToken();
+                        document.getElementById('user-info').innerText = user.email;
+                        this.loadRooms();
+                    } else {
+                        window.location.href = '/index.html?login=true&redirect=owner';
+                    }
+                });
+            }
+
+            async loadRooms() {
+                this.showLoader(true);
+                try {
+                    const res = await fetch(`${API_URL}/hotels`, {
+                        headers: { 'Authorization': `Bearer ${this.state.token}` }
+                    });
+                    const data = await res.json();
+
+                    // Filter hotels owned by this user
+                    const myHotels = data.data.filter(h => h.owner_id === this.state.user.uid || h.owner_id === `admin_${this.state.user.uid}`);
+
+                    let roomOptions = '';
+                    const allRooms = [];
+
+                    myHotels.forEach(hotel => {
+                        hotel.Rooms.forEach(room => {
+                            roomOptions += `<option value="${room.id}">${hotel.name} - ${room.name}</option>`;
+                            allRooms.push({ ...room, hotelName: hotel.name });
+                        });
+                    });
+
+                    this.state.rooms = allRooms;
+                    const selector = document.getElementById('room-selector');
+                    selector.innerHTML = roomOptions || '<option>No properties found</option>';
+
+                    if (allRooms.length > 0) {
+                        selector.value = allRooms[0].id;
+                        this.selectRoom(allRooms[0].id);
+                    }
+
+                    selector.onchange = (e) => this.selectRoom(e.target.value);
+
+                } catch (e) { console.error(e); }
+                this.showLoader(false);
+            }
+
+            selectRoom(id) {
+                this.state.selectedRoomId = id;
+                const room = this.state.rooms.find(r => r.id == id);
+                this.state.blockedDates = room.BlockedDates.map(d => d.date);
+                this.renderCalendar();
+            }
+
+            renderCalendar() {
+                const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+                const grid = document.getElementById('calendar-body');
+                const header = document.getElementById('current-month');
+
+                header.innerText = `${monthNames[this.state.currentMonth]} ${this.state.currentYear}`;
+                grid.innerHTML = dayNames.map(d => `<div class="day-name">${d}</div>`).join('');
+
+                const firstDay = new Date(this.state.currentYear, this.state.currentMonth, 1).getDay();
+                const daysInMonth = new Date(this.state.currentYear, this.state.currentMonth + 1, 0).getDate();
+
+                // Padding
+                for (let i = 0; i < firstDay; i++) {
+                    grid.innerHTML += '<div class="day empty"></div>';
+                }
+
+                const today = new Date();
+                const isThisMonth = today.getMonth() === this.state.currentMonth && today.getFullYear() === this.state.currentYear;
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateStr = `${this.state.currentYear}-${String(this.state.currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    const isBlocked = this.state.blockedDates.includes(dateStr);
+                    const isToday = isThisMonth && today.getDate() === d;
+
+                    const dayEl = document.createElement('div');
+                    dayEl.className = `day ${isBlocked ? 'blocked' : ''} ${isToday ? 'today' : ''}`;
+                    dayEl.innerText = d;
+                    dayEl.onclick = () => this.toggleAvailability(dateStr);
+                    grid.appendChild(dayEl);
+                }
+            }
+
+            async toggleAvailability(date) {
+                this.showLoader(true);
+                try {
+                    const res = await fetch(`${API_URL}/owner/rooms/${this.state.selectedRoomId}/toggle-date`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.state.token}`
+                        },
+                        body: JSON.stringify({ date })
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        if (data.action === 'ADDED') {
+                            this.state.blockedDates.push(date);
+                        } else {
+                            this.state.blockedDates = this.state.blockedDates.filter(d => d !== date);
+                        }
+                        this.renderCalendar();
+                        this.showToast(data.action === 'ADDED' ? 'Date Marked Occupied 🚫' : 'Date Marked Available ✅');
+                    }
+                } catch (e) {
+                    this.showToast('Failed to update availability.');
+                }
+                this.showLoader(false);
+            }
+
+            shareOnWhatsApp() {
+                const room = this.state.rooms.find(r => r.id == this.state.selectedRoomId);
+                const text = encodeURIComponent(`Hi! Checking if you are still interested in ${room.hotelName} (${room.name}) for any specific dates? Tap here to chat with me!`);
+                window.open(`https://wa.me/?text=${text}`, '_blank');
+            }
+
+            copyPollTemplate() {
+                const room = this.state.rooms.find(r => r.id == this.state.selectedRoomId);
+                const template = `📊 OCCUPANCY POLL: ${room.hotelName}\n\nAre you checking in this weekend?\n1️⃣ YES, I'm coming!\n2️⃣ NO, cancelled.\n3️⃣ Still deciding...\n\nReply with number! 🌴`;
+                navigator.clipboard.writeText(template);
+                this.showToast('Poll Template Copied! Paste in WhatsApp.');
+            }
+
+            showToast(msg) {
+                const t = document.getElementById('toast');
+                t.innerText = msg;
+                t.style.display = 'block';
+                setTimeout(() => t.style.display = 'none', 3000);
+            }
+
+            showLoader(show) {
+                document.getElementById('loader').style.display = show ? 'flex' : 'none';
+            }
+        }
+
+        const portal = new OwnerPortal();
+    </script>
+</body>
+
+</html>

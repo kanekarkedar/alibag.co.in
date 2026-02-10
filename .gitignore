@@ -1,0 +1,17 @@
+# Secrets & Credentials
+.env
+firebase-service-account.json
+*.pem
+
+# Dependencies
+node_modules/
+dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS Files
+.DS_Store
+Thumbs.db

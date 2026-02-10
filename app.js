@@ -1,8 +1,22 @@
 // API Configuration
-const API_URL = '/api';
+const API_URL = window.location.protocol === 'file:' ? 'https://alibag-co-in.onrender.com/api' : '/api';
 
 console.log('CuteStay App v2.2 - Loaded'); // Cache buster
 let HOTELS = []; // Will be populated from API
+
+// Firebase Configuration - REPLACE WITH YOUR OWN CONFIG FROM FIREBASE CONSOLE
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 
 class App {
     constructor() {
@@ -11,7 +25,9 @@ class App {
             selectedHotel: null,
             bookings: [],
             isLoading: true,
-            isMenuOpen: false
+            isMenuOpen: false,
+            user: null,
+            token: null
         };
         this.mainContent = document.getElementById('main-content');
         this.navItems = document.querySelectorAll('.nav-item');
@@ -24,9 +40,54 @@ class App {
         this.init();
     }
 
+    setupSecretAdmin() {
+        let clickCount = 0;
+        let lastClickTime = 0;
+        const logos = document.querySelectorAll('.logo');
+
+        logos.forEach(logo => {
+            logo.onclick = () => {
+                const now = Date.now();
+                if (now - lastClickTime < 500) {
+                    clickCount++;
+                } else {
+                    clickCount = 1;
+                }
+                lastClickTime = now;
+
+                if (clickCount >= 5) {
+                    clickCount = 0;
+                    this.renderLogin();
+                    console.log('Secret Admin Triggered 🤫');
+                }
+            };
+        });
+    }
+
     async init() {
         this.setupMenu();
+        this.setupSecretAdmin();
         this.checkFirstTimeVisitor();
+
+        // Listen for Firebase Auth State Changes
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                this.state.user = {
+                    id: user.uid,
+                    name: user.displayName || user.email.split('@')[0],
+                    email: user.email,
+                    role: 'user' // Default, should be fetched from backend/token custom claims
+                };
+                this.state.token = await user.getIdToken();
+                localStorage.setItem('alibag_user', JSON.stringify(this.state.user));
+            } else {
+                this.state.user = null;
+                this.state.token = null;
+                localStorage.removeItem('alibag_user');
+            }
+            this.setupMenu();
+            this.render();
+        });
 
         this.renderLoading();
         try {
@@ -46,19 +107,21 @@ class App {
     }
 
     setupMenu() {
+        const user = JSON.parse(localStorage.getItem('alibag_user'));
         const menuItems = [
             { icon: 'explore', label: 'Explore Alibag', action: () => this.navigate('home') },
             { icon: 'beach_access', label: 'Beach Stays', action: () => this.filterCategory('Beach') },
             { icon: 'forest', label: 'Jungle Stays', action: () => this.filterCategory('Jungle') },
             { icon: 'camping', label: 'Camping', action: () => this.filterCategory('Camping') },
             { icon: 'local_offer', label: 'Special Deals', action: () => this.renderDeals() },
+            { icon: 'person', label: user ? 'My Profile' : 'Member Login', action: () => this.navigate('profile') },
             { icon: 'info', label: 'About Us', action: () => this.renderAboutUs() },
         ];
 
         const container = this.sideMenu.querySelector('.menu-items');
         container.innerHTML = menuItems.map(item => `
-            <div class="menu-item" style="display: flex; align-items: center; gap: 12px; padding: 8px; cursor: pointer; border-radius: 8px; transition: background 0.2s;">
-                <span class="material-symbols-rounded" style="color: var(--text-light);">${item.icon}</span>
+            <div class="menu-item">
+                <span class="material-symbols-rounded">${item.icon}</span>
                 <span style="font-weight: 500;">${item.label}</span>
             </div>
         `).join('');
@@ -98,23 +161,12 @@ class App {
             const password = modal.querySelector('#login-pass').value;
 
             try {
-                const res = await fetch(`${API_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    this.state.user = data.user;
-                    this.state.token = data.token;
-                    document.body.removeChild(modal);
-                    alert(`Welcome, ${data.user.name}!`);
-                    if (data.user.role === 'admin') this.renderAdminDashboard();
-                } else {
-                    alert('Login Failed: ' + data.message);
-                }
-            } catch (e) { alert('Connection Error'); }
+                const result = await auth.signInWithEmailAndPassword(email, password);
+                const user = result.user;
+                console.log('Logged in as:', user.email);
+                document.body.removeChild(modal);
+                // Auth state listener handles the rest
+            } catch (e) { alert('Login Failed: ' + e.message); }
         };
     }
 
@@ -283,7 +335,7 @@ class App {
 
                     <div style="padding: 24px;">
                         ${deals.map(deal => `
-                < !--Deal Card-- >
+                    <!-- Deal Card -->
                     <div style="background: white; border-radius: 16px; overflow: hidden; margin-bottom: 24px; box-shadow: var(--shadow-card);">
                         <div style="height: 150px; background: url('${deal.image}') center/cover;">
                             <div style="background: rgba(0,0,0,0.4); height: 100%; display: flex; align-items: flex-end; padding: 16px;">
@@ -327,9 +379,25 @@ class App {
 
 
     filterCategory(category) {
+        this.state.currentCategory = category;
         this.mainContent.innerHTML = '';
         this.mainContent.scrollTop = 0;
         this.renderHome(category);
+    }
+
+    handleSearch(query, category) {
+        const cards = this.mainContent.querySelectorAll('.hotel-card');
+        const hotels = category ? HOTELS.filter(h => h.category === category || (category === 'Couple' && h.category === 'Villa')) : HOTELS;
+
+        cards.forEach((card, idx) => {
+            if (idx >= hotels.length) return; // Safely skip if indices mismatch
+            const hotel = hotels[idx];
+            const matches = hotel.name.toLowerCase().includes(query) ||
+                hotel.location.toLowerCase().includes(query) ||
+                hotel.category.toLowerCase().includes(query);
+
+            card.style.display = matches ? 'block' : 'none';
+        });
     }
 
     async fetchHotels() {
@@ -367,8 +435,10 @@ class App {
         this.navItems.forEach(item => {
             if (item.dataset.target === view) {
                 item.classList.add('active');
+                item.style.transform = 'translateY(-4px)';
             } else {
                 item.classList.remove('active');
+                item.style.transform = 'translateY(0)';
             }
         });
 
@@ -427,7 +497,7 @@ class App {
 
                 <div style="background: white; padding: 24px; border-radius: 16px; box-shadow: var(--shadow-card); text-align: left;">
                     ${isRegister ? `
-            < label style = "display: block; margin-bottom: 8px; font-weight: 500;" > Full Name</label >
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;" > Full Name</label>
                 <input type="text" id="auth-name" placeholder="John Doe" style="width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 8px; margin-bottom: 16px;">
                     ` : ''}
 
@@ -435,7 +505,16 @@ class App {
                     <input type="email" id="login-email" placeholder="name@example.com" style="width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 8px; margin-bottom: 16px;">
 
                         <label style="display: block; margin-bottom: 8px; font-weight: 500;">Password</label>
-                        <input type="password" id="login-pass" placeholder="••••••••" style="width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 8px; margin-bottom: 24px;">
+                        <input type="password" id="login-pass" placeholder="••••••••" style="width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 8px; margin-bottom: 16px;">
+
+                        <div style="margin-bottom: 24px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Account Type</label>
+                            <div style="display: flex; gap: 12px;">
+                                <button type="button" class="role-chip active" data-role="user" style="flex: 1; padding: 10px; border-radius: 8px; border: 2px solid var(--primary); background: var(--primary-light); color: var(--primary); font-weight: 600; cursor: pointer;">User</button>
+                                <button type="button" class="role-chip" data-role="owner" style="flex: 1; padding: 10px; border-radius: 8px; border: 2px solid #eee; background: white; color: var(--text-light); font-weight: 600; cursor: pointer;">Hotel Owner</button>
+                            </div>
+                            <input type="hidden" id="login-role" value="user">
+                        </div>
 
                             <button class="btn btn-primary" id="login-btn">${isRegister ? 'Create Account' : 'Sign In'}</button>
 
@@ -451,6 +530,25 @@ class App {
         this.mainContent.innerHTML = '';
         this.mainContent.appendChild(container);
 
+        // Role Selection Logic
+        const roleChips = container.querySelectorAll('.role-chip');
+        const roleInput = container.querySelector('#login-role');
+        roleChips.forEach(chip => {
+            chip.onclick = () => {
+                roleChips.forEach(c => {
+                    c.classList.remove('active');
+                    c.style.borderColor = '#eee';
+                    c.style.background = 'white';
+                    c.style.color = 'var(--text-light)';
+                });
+                chip.classList.add('active');
+                chip.style.borderColor = 'var(--primary)';
+                chip.style.background = 'var(--primary-light)';
+                chip.style.color = 'var(--primary)';
+                roleInput.value = chip.dataset.role;
+            };
+        });
+
         container.querySelector('#toggle-auth').onclick = (e) => {
             e.preventDefault();
             this.renderLogin(!isRegister);
@@ -459,36 +557,33 @@ class App {
         container.querySelector('#login-btn').onclick = async () => {
             const email = container.querySelector('#login-email').value;
             const password = container.querySelector('#login-pass').value;
+            const role = roleInput.value;
             const name = isRegister ? container.querySelector('#auth-name').value : null;
 
             if (!email || !password || (isRegister && !name)) return alert('Please fill in all fields');
 
-            const endpoint = isRegister ? '/auth/register' : '/auth/login';
-            const body = isRegister ? { name, email, password } : { email, password };
-
             try {
-                const res = await fetch(`${API_URL}${endpoint}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    localStorage.setItem('alibag_user', JSON.stringify(data.user));
-                    this.renderProfile();
-                    if (isRegister) alert('Welcome to the family! 🌴');
+                if (isRegister) {
+                    const result = await auth.createUserWithEmailAndPassword(email, password);
+                    await result.user.updateProfile({ displayName: name });
+                    // Handle role: in a real app, you'd call an API to set custom claims
+                    // For now, we'll just track it in our session
+                    alert('Welcome to the family! 🌴');
                 } else {
-                    alert(data.message);
+                    await auth.signInWithEmailAndPassword(email, password);
                 }
+                // Auth listener handles the rest
             } catch (e) {
                 console.error(e);
-                alert('Connection failed.');
+                alert('Auth failed: ' + e.message);
             }
         };
     }
 
     renderDashboard(user) {
+        if (user.role === 'admin') return this.renderAdminDashboard(user);
+        if (user.role === 'owner') return this.renderOwnerDashboard(user);
+
         const container = document.createElement('div');
         container.className = 'fade-in';
         container.innerHTML = `
@@ -499,7 +594,7 @@ class App {
                             </div>
                             <div>
                                 <h2 style="margin-bottom: 4px;">Hello, ${user.name} 👋</h2>
-                                <p style="font-size: 13px;">${user.email}</p>
+                                <p style="font-size: 13px;">${user.role.toUpperCase()} | ${user.email}</p>
                             </div>
                         </div>
 
@@ -537,11 +632,117 @@ class App {
                         </button>
                     </div>
                     `;
+        this.mainContent.innerHTML = '';
         this.mainContent.appendChild(container);
 
         container.querySelector('#logout-btn').onclick = () => {
-            localStorage.removeItem('alibag_user');
-            this.renderProfile();
+            auth.signOut();
+        };
+    }
+
+    renderOwnerDashboard(user) {
+        const container = document.createElement('div');
+        container.className = 'fade-in';
+        container.innerHTML = `
+            <div style="padding: 24px;">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
+                    <div style="width: 64px; height: 64px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 700;">
+                        ${user.name.charAt(0)}
+                    </div>
+                    <div>
+                        <h2 style="margin-bottom: 4px;">Owner Dashboard 🏨</h2>
+                        <p style="font-size: 13px;">Manage ${user.hotelName || 'Your Property'}</p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;">
+                    <div class="stat-card" style="background: white; padding: 16px; border-radius: 16px; box-shadow: var(--shadow-card); text-align: center;">
+                        <span class="material-symbols-rounded" style="color: var(--primary); font-size: 28px; margin-bottom: 8px;">analytics</span>
+                        <div style="font-weight: 700; font-size: 20px;">12</div>
+                        <div style="font-size: 12px; color: var(--text-light);">Bookings</div>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 16px; border-radius: 16px; box-shadow: var(--shadow-card); text-align: center;">
+                        <span class="material-symbols-rounded" style="color: #4CAF50; font-size: 28px; margin-bottom: 8px;">payments</span>
+                        <div style="font-weight: 700; font-size: 20px;">₹45k</div>
+                        <div style="font-size: 12px; color: var(--text-light);">Revenue</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 16px;">Property Controls</h3>
+                <div style="background: white; border-radius: 16px; box-shadow: var(--shadow-card); overflow: hidden;">
+                    ${[
+                { icon: 'edit', label: 'Edit Hotel Info (Phone, Description)' },
+                { icon: 'add_a_photo', label: 'Update Photos' },
+                { icon: 'inventory_2', label: 'Availability & Rates' },
+                { icon: 'reviews', label: 'Respond to Reviews' }
+            ].map(item => `
+                        <div style="padding: 16px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #f5f5f5; cursor: pointer;">
+                            <span class="material-symbols-rounded" style="color: var(--text-light);">${item.icon}</span>
+                            <span style="flex: 1; font-weight: 500;">${item.label}</span>
+                            <span class="material-symbols-rounded" style="color: #ddd;">chevron_right</span>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <button id="logout-btn" style="width: 100%; padding: 16px; margin-top: 32px; background: #FFEBEE; color: #D32F2F; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;">
+                    Log Out
+                </button>
+            </div>
+        `;
+        this.mainContent.innerHTML = '';
+        this.mainContent.appendChild(container);
+
+        container.querySelector('#logout-btn').onclick = () => {
+            auth.signOut();
+        };
+    }
+
+    renderAdminDashboard(user) {
+        const container = document.createElement('div');
+        container.className = 'fade-in';
+        container.innerHTML = `
+            <div style="padding: 24px;">
+                <h2 style="margin-bottom: 24px;">System Admin 🛠️</h2>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;">
+                    <div class="stat-card" style="background: var(--primary); color: white; padding: 16px; border-radius: 16px; text-align: center;">
+                        <span class="material-symbols-rounded" style="font-size: 28px; margin-bottom: 8px;">hub</span>
+                        <div style="font-weight: 700; font-size: 20px;">${HOTELS.length}</div>
+                        <div style="font-size: 12px; opacity: 0.8;">Total Hotels</div>
+                    </div>
+                    <div class="stat-card" style="background: #333; color: white; padding: 16px; border-radius: 16px; text-align: center;">
+                        <span class="material-symbols-rounded" style="font-size: 28px; margin-bottom: 8px;">group_add</span>
+                        <div style="font-weight: 700; font-size: 20px;">4</div>
+                        <div style="font-size: 12px; opacity: 0.8;">Pending Owners</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 16px;">System Master</h3>
+                <div style="background: white; border-radius: 16px; box-shadow: var(--shadow-card); overflow: hidden;">
+                    ${[
+                { icon: 'verified', label: 'Approve New Stays' },
+                { icon: 'settings_account_box', label: 'Manage Owner Accounts' },
+                { icon: 'database', label: 'System Bulk Import' },
+                { icon: 'monitoring', label: 'Global Analytics' }
+            ].map(item => `
+                        <div style="padding: 16px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #f5f5f5; cursor: pointer;">
+                            <span class="material-symbols-rounded" style="color: var(--text-light);">${item.icon}</span>
+                            <span style="flex: 1; font-weight: 500;">${item.label}</span>
+                            <span class="material-symbols-rounded" style="color: #ddd;">chevron_right</span>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <button id="logout-btn" style="width: 100%; padding: 16px; margin-top: 32px; background: #333; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;">
+                    Log Out
+                </button>
+            </div>
+        `;
+        this.mainContent.innerHTML = '';
+        this.mainContent.appendChild(container);
+
+        container.querySelector('#logout-btn').onclick = () => {
+            auth.signOut();
         };
     }
 
@@ -552,23 +753,40 @@ class App {
         const displayHotels = filter ? HOTELS.filter(h => h.category === filter || (filter === 'Couple' && h.category === 'Villa')) : HOTELS;
 
         header.innerHTML = `
-                    <h1 style="color: var(--primary);">Alibag.co.in 🌴</h1>
-                    <p>Verified stays. Human confirmed.</p>
-                    <div style="margin: 24px 0; display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;">
+                    <div style="margin-bottom: 24px;">
+                        <h1 style="color: var(--primary); margin-bottom: 4px;">Alibag.co.in 🌴</h1>
+                        <p style="color: var(--text-light); font-size: 15px;">Verified beach stays. Human confirmed.</p>
+                    </div>
+
+                    <div class="search-container">
+                        <span class="material-symbols-rounded" style="color: var(--text-light);">search</span>
+                        <input type="text" id="hotel-search" class="search-input" placeholder="Search beach, villa, or name..." autocomplete="off">
+                    </div>
+
+                    <div style="margin: 24px 0; display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none;">
                         ${['All', 'Beach', 'Villa', 'Camping', 'Jungle'].map((tag, i) => `
                     <button style="
-                        padding: 8px 16px; 
+                        padding: 10px 20px; 
                         border-radius: 20px; 
                         border: none; 
                         background: ${filter && filter === tag ? 'var(--primary)' : (!filter && i === 0) ? 'var(--primary)' : 'var(--surface)'}; 
                         color: ${filter && filter === tag ? 'white' : (!filter && i === 0) ? 'white' : 'var(--text-light)'};
                         font-weight: 600;
                         white-space: nowrap;
+                        box-shadow: ${filter && filter === tag ? 'var(--shadow-soft)' : (!filter && i === 0) ? 'var(--shadow-soft)' : 'var(--shadow-card)'};
+                        cursor: pointer;
+                        transition: var(--transition);
                     " onclick="app.filterCategory('${tag === 'All' ? '' : tag}')">${tag}</button>
                 `).join('')}
                     </div>
                     `;
         this.mainContent.appendChild(header);
+
+        const searchInput = header.querySelector('#hotel-search');
+        searchInput.oninput = (e) => {
+            const query = e.target.value.toLowerCase();
+            this.handleSearch(query, filter);
+        };
 
         displayHotels.forEach((hotel, index) => {
             const card = document.createElement('div');
@@ -677,13 +895,8 @@ class App {
                     <span class="material-symbols-rounded">arrow_back</span>
                 </button>
                 ${images.map(img => `
-        <img src = "${img}" style = "
-    min - width: 100 %;
-    height: 100 %;
-    object - fit: cover;
-    scroll - snap - align: center;
-    ">
-        `).join('')}
+                    <img src="${img}" style="min-width: 100%; height: 100%; object-fit: cover; scroll-snap-align: center;">
+                `).join('')}
             </div>
             <div style="padding-bottom: 80px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px;">
@@ -700,11 +913,11 @@ class App {
                 <p style="margin-bottom: 24px;">${hotel.description || "A lovely stay verified by Alibag.co.in."}</p>
 
                 <!-- Room Types Table -->
-                ${hotel.roomTypes && hotel.roomTypes.length > 0 ? `
-        < h3 style = "margin-bottom: 12px;" > Available Rooms</h3 >
-            <div style="background: white; border-radius: 16px; border: 1px solid #eee; overflow: hidden; margin-bottom: 24px;">
-                ${hotel.roomTypes.map((r, idx) => `
-                            <div class="room-row" onclick="app.selectRoomForBooking(${idx}, ${hotel.id})" style="
+                ${hotel.Rooms && hotel.Rooms.length > 0 ? `
+                    <h3 style="margin-bottom: 12px;">Available Rooms</h3>
+                    <div style="background: white; border-radius: 16px; border: 1px solid #eee; overflow: hidden; margin-bottom: 24px;">
+                        ${hotel.Rooms.map((r, idx) => `
+                            <div class="room-row" onclick="app.selectRoomForBooking(${r.id}, ${hotel.id})" style="
                                 padding: 16px; 
                                 border-bottom: 1px solid #eee; 
                                 display: flex; 
@@ -723,44 +936,33 @@ class App {
                                 </div>
                             </div>
                         `).join('')}
-            </div>
-    ` : ''}
+                    </div>
+                ` : ''}
 
                 <h3 style="margin-bottom: 12px;">Amenities</h3>
                 <div style="display: flex; gap: 16px; margin-bottom: 32px;">
                     ${['Wifi', 'Pool', 'Breakfast'].map(icon => `
-        <div> style = "
-    width: 60px; height: 60px;
-    background: var(--primary - light);
-    border - radius: var(--radius - sm);
-    display: flex;
-    align - items: center;
-    justify - content: center;
-    color: var(--primary);
-    font - size: 12px;
-    flex - direction: column;
-    gap: 4px;
-    ">
-        <span class="material-symbols-rounded" >${icon === 'Wifi' ? 'wifi' : icon === 'Pool' ? 'pool' : 'restaurant'}</span >
-            <span>${icon}</span>
-                        </div >
-        `).join('')}
+                        <div style="width: 60px; height: 60px; background: var(--primary-light); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 12px; flex-direction: column; gap: 4px;">
+                            <span class="material-symbols-rounded">${icon === 'Wifi' ? 'wifi' : icon === 'Pool' ? 'pool' : 'restaurant'}</span>
+                            <span>${icon}</span>
+                        </div>
+                    `).join('')}
                 </div>
 
                 <!-- Reviews Section -->
                 <div style="margin-bottom: 32px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                        <h3>Reviews (${hotel.reviews ? hotel.reviews.length : 0})</h3>
+                        <h3>Reviews (${hotel.Reviews ? hotel.Reviews.length : 0})</h3>
                         <span style="color: #FFB400; font-weight: 600;">★ ${hotel.rating}</span>
                     </div>
                     
-                    ${hotel.reviews && hotel.reviews.length > 0 ? hotel.reviews.map(review => `
-        <div> style = "background: white; padding: 16px; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);" >
+                    ${hotel.Reviews && hotel.Reviews.length > 0 ? hotel.Reviews.map(review => `
+                        <div style="background: white; padding: 16px; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                <span style="font-weight: 600;">${review.user}</span>
+                                <span style="font-weight: 600;">${review.userName}</span>
                                 <span style="font-size: 12px; color: var(--text-light);">${review.date}</span>
                             </div>
-                            <div style="color: #FFB400; font-size: 12px; margin-bottom: 8px;">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
+                            <div style="color: #FFB400; font-size: 12px; margin-bottom: 8px;">${'★'.repeat(Math.round(review.rating))}${'☆'.repeat(5 - Math.round(review.rating))}</div>
                             <p style="font-size: 14px; margin-bottom: ${review.reply ? '12px' : '0'};">${review.text}</p>
                             
                             ${review.reply ? `
@@ -768,10 +970,9 @@ class App {
                                     <div style="font-weight: 600; font-size: 12px; margin-bottom: 4px; color: var(--primary);">Response from Owner</div>
                                     <p style="font-size: 13px; font-style: italic;">"${review.reply}"</p>
                                 </div>
-                            ` : ''
-            }
-                        </div >
-        `).join('') : '<p>No reviews yet. Be the first!</p>'}
+                            ` : ''}
+                        </div>
+                    `).join('') : '<p>No reviews yet. Be the first!</p>'}
 
                     <button class="btn" style="width: 100%; border: 1px solid #eee; background: white; color: var(--text-main);" onclick="app.renderReviewModal(${hotel.id})">
                         Write a Review
@@ -811,8 +1012,7 @@ class App {
                 
                 <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 24px;">
                     ${[1, 2, 3, 4, 5].map(i => `
-        <span class="material-symbols-rounded star-btn" data - val="${i}" style = "
-    font - size: 32px; color: #ddd; cursor: pointer;
+                        <span class="material-symbols-rounded star-btn" data-val="${i}" style="font-size: 32px; color: #ddd; cursor: pointer;">
     ">star</span>
         `).join('')}
                 </div>
@@ -848,7 +1048,12 @@ class App {
         modal.querySelector('#submit-review').onclick = async () => {
             const rating = document.getElementById('review-rating').value;
             const text = document.getElementById('review-text').value;
-            const user = JSON.parse(localStorage.getItem('alibag_user'));
+            const user = this.state.user;
+            const token = this.state.token;
+
+            if (!user || !token) {
+                return alert('Please login to write a review! 🌴');
+            }
 
             if (rating == 0) return alert('Please select a rating!');
             if (text.length < 10) return alert('Please tell us a bit more (min 10 chars).');
@@ -867,10 +1072,12 @@ class App {
                 // Submit to Backend
                 const res = await fetch(`${API_URL}/hotels/${hotelId}/reviews`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify({
-                        user: user ? user.name : 'Anonymous',
-                        userId: user ? user.id : null,
+                        rating: rating,
                         rating: rating,
                         text: text
                     })
@@ -912,13 +1119,13 @@ class App {
             </div>
             
             <div style="background: white; padding: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-card); margin-bottom: 24px;">
-                ${hotel.roomTypes && hotel.roomTypes.length > 0 ? `
-        < label style = "display: block; margin-bottom: 12px; font-weight: 500;" > Select Room Type</label >
+                ${hotel.Rooms && hotel.Rooms.length > 0 ? `
+        <label style="display: block; margin-bottom: 12px; font-weight: 500;" > Select Room Type</label>
             <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
-                ${hotel.roomTypes.map((room, i) => `
+                ${hotel.Rooms.map((room, i) => `
                             <label style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #eee; border-radius: 12px; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 12px;">
-                                    <input type="radio" name="room-type" value="${i}" ${i === 0 ? 'checked' : ''}>
+                                    <input type="radio" name="room-type" value="${room.id}" ${i === 0 ? 'checked' : ''}>
                                     <div>
                                         <div style="font-weight: 600;">${room.name}</div>
                                         <div style="font-size: 11px; color: var(--text-light);">${room.description}</div>
@@ -987,15 +1194,31 @@ class App {
             let selectedRoom = null;
 
             const checkedRadio = container.querySelector('input[name="room-type"]:checked');
-            if (checkedRadio && hotel.roomTypes) {
-                const idx = parseInt(checkedRadio.value);
-                currentPrice = hotel.roomTypes[idx].price;
-                selectedRoom = hotel.roomTypes[idx];
+            if (checkedRadio && hotel.Rooms) {
+                const roomId = parseInt(checkedRadio.value);
+                selectedRoom = hotel.Rooms.find(r => r.id === roomId);
+                currentPrice = selectedRoom.price;
             }
 
             if (checkIn.value && checkOut.value) {
                 const start = new Date(checkIn.value);
                 const end = new Date(checkOut.value);
+
+                // Check for blocked dates in the range
+                if (selectedRoom && selectedRoom.BlockedDates) {
+                    const blockedInRange = selectedRoom.BlockedDates.some(bd => {
+                        const d = new Date(bd.date);
+                        return d >= start && d <= end;
+                    });
+
+                    if (blockedInRange) {
+                        alert('Oops! Some dates in your selection are already occupied. Please try different dates. 🌴');
+                        checkIn.value = '';
+                        checkOut.value = '';
+                        return;
+                    }
+                }
+
                 const diffTime = Math.abs(end - start);
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -1075,71 +1298,106 @@ class App {
 
         container.querySelector('#back-btn-payment').onclick = () => this.navigate('booking');
 
-        container.querySelector('#pay-btn').onclick = () => {
-            this.state.bookings.push({
-                ...booking,
-                id: Date.now(),
-                status: 'PENDING_CONFIRMATION'
-            });
-            this.state.tempBooking = null;
-            // Alibag.co.in 5-min promise alert
-            alert('Request Sent! 📨\n\nWe are checking with the host (Kenji). You will receive a confirmation within 5 minutes.');
-            this.navigate('bookings');
+        container.querySelector('#pay-btn').onclick = async () => {
+            if (!this.state.token) return alert('Please login to book!');
+
+            try {
+                const res = await fetch(`${API_URL}/bookings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.state.token}`
+                    },
+                    body: JSON.stringify({
+                        roomId: booking.roomType.id,
+                        checkIn: booking.checkIn,
+                        checkOut: booking.checkOut,
+                        nights: booking.nights,
+                        totalPrice: booking.totalPrice
+                    })
+                });
+
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'Booking failed');
+
+                this.state.tempBooking = null;
+                alert('Request Sent! 📨\n\nWe are checking with the host. You will receive a confirmation within 5 minutes.');
+                this.navigate('bookings');
+            } catch (e) {
+                console.error(e);
+                alert('Failed to send booking request.');
+            }
         };
     }
 
-    renderMyBookings() {
+    async renderMyBookings() {
         this.mainContent.innerHTML = `<h2>My Trips</h2>`;
 
-        if (this.state.bookings.length === 0) {
-            this.mainContent.innerHTML += `
-                <div style="text-align: center; padding: 48px; color: var(--text-light);">
-                    <span class="material-symbols-rounded" style="font-size: 48px;">beach_access</span>
-                    <p>No trips planned yet.</p>
-                </div>
-            `;
+        if (!this.state.token) {
+            this.mainContent.innerHTML += `<p style="text-align: center; padding: 48px;">Please login to see your trips.</p>`;
             return;
         }
 
-        const list = document.createElement('div');
-        list.className = 'fade-in';
-        list.style.display = 'flex';
-        list.style.flexDirection = 'column';
-        list.style.gap = '16px';
+        try {
+            const res = await fetch(`${API_URL}/bookings`, {
+                headers: { 'Authorization': `Bearer ${this.state.token}` }
+            });
+            const { data: bookings } = await res.json();
 
-        this.state.bookings.forEach(booking => {
-            const isPending = booking.status === 'PENDING_CONFIRMATION';
-            const statusColor = isPending ? '#FFB400' : 'var(--success)';
+            if (bookings.length === 0) {
+                this.mainContent.innerHTML += `
+                    <div style="text-align: center; padding: 48px; color: var(--text-light);">
+                        <span class="material-symbols-rounded" style="font-size: 48px;">beach_access</span>
+                        <p>No trips planned yet.</p>
+                    </div>
+                `;
+                return;
+            }
 
-            const item = document.createElement('div');
-            item.style.cssText = `
-                background: white; padding: 16px; border-radius: var(--radius-md);
-                box-shadow: var(--shadow-card); display: flex; gap: 16px; align-items: center; margin-bottom: 16px;
-            `;
-            const mainImage = booking.hotel.images ? booking.hotel.images[0] : booking.hotel.image;
-            item.innerHTML = `
-                <img src="${mainImage}" style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover;">
-                <div style="flex: 1;">
-                    <h3 style="font-size: 16px; margin-bottom: 4px;">${booking.hotel.name}</h3>
-                    <div style="font-size: 13px; color: var(--text-light); margin-bottom: 4px;">
-                        ${booking.checkIn} — ${booking.checkOut}
+            const list = document.createElement('div');
+            list.className = 'fade-in';
+            list.style.display = 'flex';
+            list.style.flexDirection = 'column';
+            list.style.gap = '16px';
+
+            bookings.forEach(booking => {
+                const isPending = booking.status === 'PENDING_CONFIRMATION';
+                const statusColor = isPending ? '#FFB400' : 'var(--success)';
+                const hotel = booking.Room.Hotel;
+                const mainImage = hotel.images ? hotel.images[0] : 'https://via.placeholder.com/60x60';
+
+                const item = document.createElement('div');
+                item.style.cssText = `
+                    background: white; padding: 16px; border-radius: var(--radius-md);
+                    box-shadow: var(--shadow-card); display: flex; gap: 16px; align-items: center; margin-bottom: 16px;
+                `;
+                item.innerHTML = `
+                    <img src="${mainImage}" style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover;">
+                    <div style="flex: 1;">
+                        <h3 style="font-size: 16px; margin-bottom: 4px;">${hotel.name}</h3>
+                        <div style="font-size: 13px; color: var(--text-light); margin-bottom: 4px;">
+                            ${booking.checkIn} — ${booking.checkOut}
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="
+                                font-size: 11px; 
+                                background: ${statusColor}20; 
+                                color: ${statusColor};
+                                padding: 4px 8px; 
+                                border-radius: 8px; 
+                                font-weight: 700;
+                            ">${booking.status.replace('_', ' ')}</span>
+                            <span style="font-weight: 700;">₹${booking.totalPrice}</span>
+                        </div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="
-                            font-size: 11px; 
-                            background: ${statusColor}20; 
-                            color: ${statusColor};
-                            padding: 4px 8px; 
-                            border-radius: 8px; 
-                            font-weight: 700;
-                        ">${booking.status.replace('_', ' ')}</span>
-                        <span style="font-weight: 700;">₹${booking.totalPrice}</span>
-                    </div>
-                </div>
-            `;
-            list.appendChild(item);
-        });
-        this.mainContent.appendChild(list);
+                `;
+                list.appendChild(item);
+            });
+            this.mainContent.appendChild(list);
+        } catch (e) {
+            console.error(e);
+            this.mainContent.innerHTML += `<p style="text-align: center; color: red;">Failed to load trips.</p>`;
+        }
     }
 
     renderPlaceholder(title) {
@@ -1330,7 +1588,7 @@ class App {
                            `;
         }).join('')
             }
-                    </div >
+                    </div>
         `}
             </div>
         `;
@@ -1357,7 +1615,7 @@ class App {
                                 <p style="font-size: 13px; color: var(--text-light); margin-bottom: 8px;">${n.body}</p>
                                 <span style="font-size: 11px; color: #999;">${n.time}</span>
                             </div>
-                        </div >
+                        </div>
         `).join('')}
                 </div>
             </div>
@@ -1457,19 +1715,21 @@ class App {
         }
     }
 
-    selectRoomForBooking(roomIdx, hotelId) {
-        const hotel = HOTELS.find(h => h.id === hotelId);
-        if (!hotel || !hotel.roomTypes) return;
+    selectRoomForBooking(roomId, hotelId) {
+        const hotel = HOTELS.find(h => h.id == hotelId);
+        if (!hotel || !hotel.Rooms) return;
 
         this.navigate('booking', { hotelId: hotel.id });
 
         // Helper to check the radio button after navigation
         setTimeout(() => {
             const radios = document.querySelectorAll('input[name="room-type"]');
-            if (radios[roomIdx]) {
-                radios[roomIdx].click();
-            }
-        }, 100);
+            radios.forEach(r => {
+                if (r.value == roomId) {
+                    r.click();
+                }
+            });
+        }, 150);
     }
 }
 window.app = new App();

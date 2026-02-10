@@ -1,55 +1,95 @@
-const mongoose = require('mongoose');
+const { Sequelize, DataTypes } = require('sequelize');
+require('dotenv').config();
 
-const hotelSchema = new mongoose.Schema({
-    id: { type: Number, required: true, unique: true }, // Keeping existing ID logic for now
-    owner_id: String,
-    name: { type: String, required: true },
-    location: { type: String, required: true },
-    category: { type: String, default: 'Villa' },
-    price: { type: Number, required: true },
-    description: String,
-    amenities: [String],
-    is_active: { type: Boolean, default: true },
-    images: [String],
-    roomTypes: [{
-        name: String,
-        price: Number,
-        available: Boolean,
-        description: String
-    }],
-    reviews: [{
-        id: Number,
-        user: String,
-        rating: Number,
-        comment: String,
-        date: String
-    }],
-    rating: { type: Number, default: 4.5 }
+const sequelize = new Sequelize(process.env.DATABASE_URL || 'postgres://localhost:5432/cutestay', {
+    dialect: 'postgres',
+    logging: false,
+    dialectOptions: {
+        ssl: process.env.DATABASE_URL && process.env.DATABASE_URL.includes('render.com') ? {
+            require: true,
+            rejectUnauthorized: false
+        } : false
+    }
 });
 
-const bookingSchema = new mongoose.Schema({
-    id: { type: Number, required: true, unique: true },
-    hotelId: Number,
-    hotelName: String,
-    roomType: String,
-    checkIn: String,
-    checkOut: String,
-    nights: Number,
-    totalPrice: Number,
-    status: { type: String, default: 'PENDING_CONFIRMATION' },
-    user: { type: Object } // Store minimal user data
+const User = sequelize.define('User', {
+    id: { type: DataTypes.STRING, primaryKey: true },
+    name: { type: DataTypes.STRING, allowNull: false },
+    email: { type: DataTypes.STRING, allowNull: false, unique: true },
+    password_hash: { type: DataTypes.STRING, allowNull: false },
+    role: { type: DataTypes.STRING, defaultValue: 'user' }
 });
 
-const userSchema = new mongoose.Schema({
-    id: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password_hash: { type: String, required: true },
-    role: { type: String, default: 'user' }
+const Hotel = sequelize.define('Hotel', {
+    id: { type: DataTypes.BIGINT, primaryKey: true },
+    owner_id: { type: DataTypes.STRING },
+    name: { type: DataTypes.STRING, allowNull: false },
+    location: { type: DataTypes.STRING, allowNull: false },
+    category: { type: DataTypes.STRING, defaultValue: 'Villa' },
+    price: { type: DataTypes.INTEGER, allowNull: false }, // Base price
+    description: { type: DataTypes.TEXT },
+    amenities: { type: DataTypes.ARRAY(DataTypes.STRING), defaultValue: [] },
+    is_active: { type: DataTypes.BOOLEAN, defaultValue: true },
+    images: { type: DataTypes.ARRAY(DataTypes.STRING), defaultValue: [] },
+    rating: { type: DataTypes.FLOAT, defaultValue: 4.5 }
 });
+
+const Room = sequelize.define('Room', {
+    id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+    name: { type: DataTypes.STRING, allowNull: false },
+    price: { type: DataTypes.INTEGER, allowNull: false },
+    available: { type: DataTypes.BOOLEAN, defaultValue: true },
+    description: { type: DataTypes.TEXT }
+});
+
+const Review = sequelize.define('Review', {
+    id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+    userName: { type: DataTypes.STRING },
+    rating: { type: DataTypes.INTEGER, allowNull: false },
+    text: { type: DataTypes.TEXT, allowNull: false },
+    date: { type: DataTypes.STRING }
+});
+
+const Booking = sequelize.define('Booking', {
+    id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+    checkIn: { type: DataTypes.STRING, allowNull: false },
+    checkOut: { type: DataTypes.STRING, allowNull: false },
+    nights: { type: DataTypes.INTEGER },
+    totalPrice: { type: DataTypes.INTEGER },
+    status: { type: DataTypes.STRING, defaultValue: 'PENDING_CONFIRMATION' }
+});
+
+const BlockedDate = sequelize.define('BlockedDate', {
+    id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+    date: { type: DataTypes.STRING, allowNull: false }, // YYYY-MM-DD
+    reason: { type: DataTypes.STRING, defaultValue: 'Occupied' }
+});
+
+// Relationships
+Hotel.hasMany(Room, { foreignKey: 'hotelId', onDelete: 'CASCADE' });
+Room.belongsTo(Hotel, { foreignKey: 'hotelId' });
+
+Hotel.hasMany(Review, { foreignKey: 'hotelId', onDelete: 'CASCADE' });
+Review.belongsTo(Hotel, { foreignKey: 'hotelId' });
+
+User.hasMany(Review, { foreignKey: 'userId' });
+Review.belongsTo(User, { foreignKey: 'userId' });
+
+User.hasMany(Booking, { foreignKey: 'userId' });
+Booking.belongsTo(User, { foreignKey: 'userId' });
+
+Room.hasMany(Booking, { foreignKey: 'roomId' });
+Booking.belongsTo(Room, { foreignKey: 'roomId' });
+
+Room.hasMany(BlockedDate, { foreignKey: 'roomId', onDelete: 'CASCADE' });
+BlockedDate.belongsTo(Room, { foreignKey: 'roomId' });
 
 module.exports = {
-    Hotel: mongoose.model('Hotel', hotelSchema),
-    Booking: mongoose.model('Booking', bookingSchema),
-    User: mongoose.model('User', userSchema)
+    sequelize,
+    User,
+    Hotel,
+    Room,
+    Review,
+    Booking,
+    BlockedDate
 };
